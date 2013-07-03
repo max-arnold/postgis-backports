@@ -54,9 +54,9 @@ Last-Update: 2013-04-14
 @@ -120,6 +137,8 @@
  			<groupId>postgresql</groupId>
  			<artifactId>postgresql</artifactId>
- 			<version>9.1-901.jdbc3</version>
+ 			<version>9.2-901.jdbc3</version>
 +			<scope>system</scope>
-+			<systemPath>/usr/share/java/postgresql-jdbc3-9.1.jar</systemPath>
++			<systemPath>/usr/share/java/postgresql-jdbc3-9.2.jar</systemPath>
  		</dependency>
  	</dependencies>
  	<reporting>
