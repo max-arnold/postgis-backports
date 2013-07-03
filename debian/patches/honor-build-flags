@@ -1,0 +1,67 @@
+Description: Better honor build flags during the build process.
+ Upstream PostGIS 'configure' overrides CPPFLAGS. Various Makefile.in
+ files don't honor LDFLAGS. This patch fixes that. Note that we are
+ patching configure directly, so as to save a call to autoconf. A real
+ patch for upstream would have to patch configure.in, instead.
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-04-23
+
+--- a/loader/Makefile.in
++++ b/loader/Makefile.in
+@@ -97,11 +97,11 @@
+ 
+ $(PGSQL2SHP-CLI): $(SHPLIB_OBJS) pgsql2shp-core.o pgsql2shp-cli.o $(LIBLWGEOM) 
+ 	$(LIBTOOL) --mode=link \
+-	  $(CC) $(CFLAGS) $^ $(ICONV_LDFLAGS) $(PGSQL_FE_LDFLAGS) $(GETTEXT_LDFLAGS) -o $@ 
++	  $(CC) $(CFLAGS) $^ $(LDFLAGS) $(ICONV_LDFLAGS) $(PGSQL_FE_LDFLAGS) $(GETTEXT_LDFLAGS) -o $@
+ 
+ $(SHP2PGSQL-CLI): $(SHPLIB_OBJS) shp2pgsql-core.o shp2pgsql-cli.o $(LIBLWGEOM) 
+ 	$(LIBTOOL) --mode=link \
+-	  $(CC) $(CFLAGS) $^ -o $@ $(GETTEXT_LDFLAGS) $(ICONV_LDFLAGS) 
++	  $(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(GETTEXT_LDFLAGS) $(ICONV_LDFLAGS)
+ 
+ shp2pgsql-gui.o: shp2pgsql-gui.c shp2pgsql-core.h shpcommon.h
+ 	$(CC) $(CFLAGS) $(GTK_CFLAGS) $(PGSQL_FE_CPPFLAGS) -o $@ -c shp2pgsql-gui.c
+@@ -109,7 +109,7 @@
+ $(SHP2PGSQL-GUI): $(SHPLIB_OBJS) shp2pgsql-core.o shp2pgsql-gui.o pgsql2shp-core.o $(LIBLWGEOM) $(GTK_WIN32_RES)
+ 	$(LIBTOOL) --mode=link \
+ 	  $(CC) $(CFLAGS) $(GTK_WIN32_FLAGS) $^ -o $@ \
+-	  $(GTK_LIBS) $(ICONV_LDFLAGS) $(PGSQL_FE_LDFLAGS) $(GETTEXT_LDFLAGS) 
++	  $(GTK_LIBS) $(LDFLAGS) $(ICONV_LDFLAGS) $(PGSQL_FE_LDFLAGS) $(GETTEXT_LDFLAGS)
+ 
+ installdir:
+ 	@mkdir -p $(DESTDIR)$(bindir)
+--- a/liblwgeom/Makefile.in
++++ b/liblwgeom/Makefile.in
+@@ -11,6 +11,7 @@
+ # **********************************************************************
+ 
+ CC = @CC@
++CPPFLAGS = @CPPFLAGS@
+ CFLAGS = @CFLAGS@ @PICFLAGS@ @WARNFLAGS@ @GEOS_CPPFLAGS@ @PROJ_CPPFLAGS@
+ LDFLAGS = @LDFLAGS@ @GEOS_LDFLAGS@ -lgeos_c @PROJ_LDFLAGS@ -lproj
+ NUMERICFLAGS = @NUMERICFLAGS@
+@@ -147,10 +148,10 @@
+ 
+ # Command to build each of the .lo files
+ $(LT_SA_OBJS): %.lo: %.c
+-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c -o $@ $<
++	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+ 
+ $(LT_NM_OBJS): %.lo: %.c
+-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(NUMERICFLAGS) -c -o $@ $<
++	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) $(NUMERICFLAGS) -c -o $@ $<
+ 
+ # Manually generate WKT parser from Flex/Bison inputs
+ # Bison 2.5, Flex 2.5.35
+--- a/configure
++++ b/configure
+@@ -19526,7 +19526,7 @@
+ 
+ 
+ 
+-CPPFLAGS="$PGSQL_CPPFLAGS $GEOS_CPPFLAGS $PROJ_CPPFLAGS $JSON_CPPFLAGS $XML2_CPPFLAGS"
++CPPFLAGS="$CPPFLAGS $PGSQL_CPPFLAGS $GEOS_CPPFLAGS $PROJ_CPPFLAGS $JSON_CPPFLAGS $XML2_CPPFLAGS"
+ 
+ SHLIB_LINK="$PGSQL_LDFLAGS $GEOS_LDFLAGS $PROJ_LDFLAGS -lgeos_c -lproj $JSON_LDFLAGS $XML2_LDFLAGS"
+ 

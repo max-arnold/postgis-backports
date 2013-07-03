@@ -1,0 +1,3 @@
+# Note that postgis-2.0 is not recommended for 8.4 and 9.0, works fine
+# with 9.1 and 9.2, but doesn't work with 9.3, yet.
+9.1

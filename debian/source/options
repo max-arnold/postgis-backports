@@ -1,0 +1,3 @@
+# Ignore changes on auto-updated files
+extend-diff-ignore = "(^|/)(doc/html/image_src/Makefile|libtool|postgis/sqldefines.h|doc/html/images/.*\.png)$"
+

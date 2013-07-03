@@ -1,0 +1,6 @@
+version=3
+
+opts=uversionmangle=s/(\d)[_\.\-\+]?((RC|rc|pre|dev|beta|alpha|b|a)\d*)$/$1~$2/ \
+ http://download.osgeo.org/postgis/source/ \
+ (?:.*/|)postgis[\-\._]?([\d\.]+(?:(?:RC|rc|pre|dev|beta|alpha|b|a)\d+)?)\.(?:tar\.xz|txz|tar\.bz2|tbz2|tar\.gz|tgz)
+

@@ -1,0 +1,62 @@
+Description: Adjust maven pom file to integrate with Debian
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-04-14
+
+--- a/java/jdbc/build.xml
++++ b/java/jdbc/build.xml
+@@ -53,13 +53,8 @@
+     <pathelement location="postgis_${postgis_version}.jar"/>
+   </path>
+ 
+-
+      <!-- Loading Maven dependencies -->
+-     <mkdir dir="lib"/>
+-     <get src="http://www.apache.org/dist/maven/ant-tasks/2.1.3/binaries/maven-ant-tasks-2.1.3.jar"
+-          dest="lib/maven-ant-tasks-2.1.3.jar"/>
+-
+-     <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.3.jar" />
++     <path id="maven-ant-tasks.classpath" path="/usr/share/java/maven-ant-tasks.jar" />
+      <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+            uri="antlib:org.apache.maven.artifact.ant"
+            classpathref="maven-ant-tasks.classpath" />
+--- a/java/jdbc/pom.xml
++++ b/java/jdbc/pom.xml
+@@ -82,10 +82,27 @@
+ 			</resource>
+ 		</resources>
+ 
+-		<plugins><!--
+-
++		<plugins>
++			<plugin>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-clean-plugin</artifactId>
++			</plugin>
+ 			<plugin>
+ 				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-jar-plugin</artifactId>
++				<configuration>
++					<archive>
++						<manifest>
++							<addClasspath>true</addClasspath>
++						</manifest>
++						<manifestEntries>
++							<Class-Path>/usr/share/java/postgresql-jdbc.jar</Class-Path>
++						</manifestEntries>
++					</archive>
++				</configuration>
++			</plugin>
++			<!--<plugin>
++				<groupId>org.apache.maven.plugins</groupId>
+ 				<artifactId>maven-source-plugin</artifactId>
+ 				<executions>
+ 					<execution>
+@@ -120,6 +137,8 @@
+ 			<groupId>postgresql</groupId>
+ 			<artifactId>postgresql</artifactId>
+ 			<version>9.1-901.jdbc3</version>
++			<scope>system</scope>
++			<systemPath>/usr/share/java/postgresql-jdbc3-9.1.jar</systemPath>
+ 		</dependency>
+ 	</dependencies>
+ 	<reporting>

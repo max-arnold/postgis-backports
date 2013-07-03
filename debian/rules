@@ -1,0 +1,204 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+# Magic to automatically create a debian/control file for the (or all)
+# supported versions of Postgres.
+#
+# Blatantly copied from /usr/share/postgresql-common/pgxs_debian_control.mk
+# and extended to support NEWEST_VERSION.
+debian/control: debian/control.in debian/pgversions
+	(set -e; \
+	VERSIONS=`pg_buildext supported-versions $(CURDIR)` || exit $$?; \
+	NEWEST_VERSION=`pg_buildext supported-versions $(CURDIR) | tail -1` || exit $$?; \
+	grep-dctrl -vP PGVERSION $< | \
+		sed -e "s:NEWEST_PGVERSION:$$NEWEST_VERSION:" > $@.pgxs_tmp; \
+	for v in $$VERSIONS; \
+        do                                         \
+		grep -q "^$$v" debian/pgversions   \
+		&& grep-dctrl -P PGVERSION $<      \
+		| sed -e "s:PGVERSION:$$v:" >> $@.pgxs_tmp; \
+	done; \
+	mv $@.pgxs_tmp $@) || (rm -f $@.pgxs_tmp; exit 1)
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+# Use maven in offline mode and with the local Debian repo
+MVN = mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
+
+MAJOR_VERSION = $(shell grep POSTGIS_MAJOR_VERSION Version.config|cut -d= -f2)
+MINOR_VERSION = $(shell grep POSTGIS_MINOR_VERSION Version.config|cut -d= -f2)
+MICRO_VERSION = $(shell grep POSTGIS_MICRO_VERSION Version.config|cut -d= -f2)
+POSTGIS_VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
+ifeq ($(POSTGIS_VERSION),..)
+$(error Cannot detect Postgis version, fix debian/rules)
+endif
+
+# For plain Debian, we support only exactly one version at a time.
+NEWEST_POSTGRES_VERSION = $(shell pg_buildext supported-versions $(CURDIR)|tail -1)
+ifeq ($(NEWEST_POSTGRES_VERSION),)
+$(error Cannot detect Postgres version, check debian/pgversions and pg_buildext)
+endif
+
+build: build-arch build-indep
+
+build-arch: build-arch-stamp
+build-arch-stamp: configuration-stamp
+	$(MAKE)
+	$(MAKE) -C doc
+
+	touch $@
+
+build-indep: build-indep-stamp
+build-indep-stamp: configuration-stamp
+#	PostGIS JDBC (with debug support)
+	cd $(CURDIR)/java/jdbc && $(MVN) package
+
+#	Let PostGIS create a perl script from postgis_restore.pl.in
+	$(MAKE) -C utils
+
+#	Create a few SQL scripts that the Makefiles are not clever enough
+#	to resolve, when building arch-indep only.
+	$(MAKE) -C postgis postgis.sql postgis_upgrade_20_minor.sql
+	$(MAKE) -C raster/rt_pg rtpostgis.sql rtpostgis_upgrade_20_minor.sql
+	$(MAKE) -C topology topology.sql topology_upgrade_20_minor.sql
+
+#	This creates the required SQL scripts. Again, the Makefile is not
+#	clever enough to run this before 'install'.
+	$(MAKE) -C extensions
+
+	touch $@
+
+configuration: configuration-stamp
+configuration-stamp:
+	dh_testdir
+	dh_prep -s 
+#	Documentation and common files for PostGIS
+	[ ! -f doc/html/postgis.html.prev -a -f doc/html/postgis.html ] && cp doc/html/postgis.html doc/html/postgis.html.prev || true
+
+#	PostGIS for the most recent PostgreSQL version
+	./configure \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--prefix=/usr \
+		--exec-prefix=\$${prefix} \
+		--datadir=\$${prefix}/share/postgresql-$(NEWEST_POSTGRES_VERSION)-postgis \
+		--docdir=\$${prefix}/share/doc \
+		--mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info \
+		--with-pgconfig=/usr/lib/postgresql/$(NEWEST_POSTGRES_VERSION)/bin/pg_config \
+		--with-gui
+
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f raster/rt_pg/rtpostgis_drop.sql raster/rt_pg/rtpostgis_upgrade_cleanup.sql postgis/postgis_upgrade_20_minor.sql.in
+	[ -f doc/html/postgis.html.prev ] && mv doc/html/postgis.html.prev doc/html/postgis.html || true
+	[ ! -f GNUmakefile ] || $(MAKE) distclean || true
+	cd $(CURDIR)/java/jdbc && $(MVN) clean
+	$(MAKE) -C doc images-clean
+	rm -f $(CURDIR)/debian/*.postinst $(CURDIR)/debian/*.postrm
+	rm -f postgis/postgis_upgrade_20_minor.sql.in raster/rt_pg/rtpostgis_drop.sql \
+		raster/rt_pg/rtpostgis_upgrade_cleanup.sql
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0.install
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0-scripts.install
+	dh_clean
+
+install: install-indep install-arch
+install-indep: build-indep
+	dh_testdir
+	dh_testroot
+	dh_prep -i 
+	dh_installdirs -i
+
+#	Install extensions
+	$(MAKE) -C extensions install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) -C doc docs-install \
+			DESTDIR=$(CURDIR)/debian/tmp \
+			PGSQL_DOCDIR=/usr/share/doc
+
+	dh_install -i
+
+#	Link the resulting JAR file, so it's available via it's old
+#	name. (Even if postgis-jdbc.jar might be more appropriate.)
+	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
+		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
+
+install-arch: build-arch
+	dh_testdir
+	dh_testroot
+	dh_prep -s
+	dh_installdirs -s
+
+#	Install docs
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) -C doc man-install \
+			DESTDIR=$(CURDIR)/debian/tmp \
+			PGSQL_DOCDIR=/usr/share/doc \
+			PGSQL_MANDIR=/usr/share/man
+
+#	Auto-create required .install file for the current Postgres version.
+	cat $(CURDIR)/debian/postgresql-generic-postgis-2.0.install.in \
+		| sed -e 's/@PGVERSION@/$(NEWEST_POSTGRES_VERSION)/' \
+		> $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-postgis-2.0.install
+	cat $(CURDIR)/debian/postgresql-generic-postgis-2.0-scripts.install.in \
+		| sed -e 's/@PGVERSION@/$(NEWEST_POSTGRES_VERSION)/' \
+		> $(CURDIR)/debian/postgresql-$(NEWEST_POSTGRES_VERSION)-postgis-2.0-scripts.install
+
+	dh_install -s
+
+check: install-arch
+	$(MAKE) check
+
+# Must not depend on anything. This is to be called by
+# binary-arch/binary-indep
+# in another 'make' thread.
+binary-common:
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs ChangeLog
+	dh_installdocs
+	dh_installexamples
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs -Xusr/lib/postgis
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture independant packages using the common target.
+binary-indep: install-indep
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
+
+# Build architecture dependant packages using the common target.
+binary-arch: install-arch
+	$(MAKE) -f debian/rules DH_OPTIONS=-a binary-common
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch check

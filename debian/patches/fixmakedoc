@@ -1,0 +1,15 @@
+Description: Not sure why exactly we need this...
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-04-14
+
+--- a/doc/Makefile
++++ b/doc/Makefile
+@@ -244,7 +244,7 @@
+ 	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/postgis.html
+ 	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/README.postgis
+ 
+-install: comments-install
++install: man-install docs-install
+ 
+ uninstall: comments-uninstall
+ 

@@ -1,0 +1,53 @@
+Description: Dynamically link to liblwgeom
+ Instead of statically pulling liblwgeom into the postgis.so, dynamically
+ link to it.
+Author: Stephen Frost <sfrost@snowman.net>, Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-04-23
+
+--- a/postgis/Makefile.in
++++ b/postgis/Makefile.in
+@@ -65,14 +65,8 @@
+ OBJS=$(PG_OBJS)
+ 
+ # Libraries to link into the module (proj, geos)
+-#
+-# Note: we specify liblwgeom.a directly in SHLIB_LINK rather than using
+-# -L... -l options to prevent issues with some platforms trying to link
+-# to an existing liblwgeom.so in the PostgreSQL $libdir supplied by an
+-# older version of PostGIS, rather than with the static liblwgeom.a 
+-# supplied with newer versions of PostGIS
+ PG_CPPFLAGS += @CPPFLAGS@ -I../liblwgeom -I../libpgcommon
+-SHLIB_LINK_F = ../liblwgeom/.libs/liblwgeom.a ../libpgcommon/libpgcommon.a @SHLIB_LINK@ 
++SHLIB_LINK_F = -L../liblwgeom/.libs -llwgeom ../libpgcommon/libpgcommon.a @SHLIB_LINK@
+ 
+ # Extra files to remove during 'make clean'
+ EXTRA_CLEAN=$(SQL_OBJS) legacy_uninstall.sql
+--- a/raster/rt_pg/Makefile.in
++++ b/raster/rt_pg/Makefile.in
+@@ -27,14 +27,7 @@
+ OBJS=rt_pg.o
+ 
+ # Libraries to link into the module (proj, geos)
+-#
+-# Note: we specify liblwgeom.a directly in SHLIB_LINK rather than using
+-# -L... -l options to prevent issues with some platforms trying to link
+-# to an existing liblwgeom.so in the PostgreSQL $libdir supplied by an
+-# older version of PostGIS, rather than with the static liblwgeom.a 
+-# supplied with newer versions of PostGIS
+-#
+-LIBLWGEOM_LDFLAGS=../../liblwgeom/.libs/liblwgeom.a
++LIBLWGEOM_LDFLAGS=-L../../liblwgeom/.libs -llwgeom
+ LIBLWGEOM_CFLAGS="-I../../liblwgeom"
+ LIBPGCOMMON_CFLAGS="-I../../libpgcommon"
+ LIBPGCOMMON_LDFLAGS=../../libpgcommon/libpgcommon.a
+--- a/raster/loader/Makefile.in
++++ b/raster/loader/Makefile.in
+@@ -31,7 +31,7 @@
+ 
+ RT_CORE=../rt_core
+ 
+-LIBLWGEOM_LDFLAGS=../../liblwgeom/liblwgeom.la
++LIBLWGEOM_LDFLAGS=-L../../liblwgeom/.libs -llwgeom
+ LIBLWGEOM_CFLAGS=-I../../liblwgeom
+ LIBGDAL_CFLAGS=@LIBGDAL_CFLAGS@
+ LIBGDAL_LDFLAGS=@LIBGDAL_LDFLAGS@

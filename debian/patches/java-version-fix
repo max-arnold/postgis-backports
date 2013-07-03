@@ -1,0 +1,28 @@
+Description: Correct postgis java jdbc version.
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-04-14
+
+--- a/java/jdbc/pom.xml
++++ b/java/jdbc/pom.xml
+@@ -60,9 +60,9 @@
+ 		<url>http://trac.osgeo.org/postgis/</url>
+ 	</issueManagement>
+ 	<scm>
+-		<url>http://trac.osgeo.org/postgis/browser/tags/2.0.0</url>
+-		<connection>scm:svn:http://svn.osgeo.org/postgis/tags/2.0.0/</connection>
+-		<developerConnection>scm:svn:http://svn.osgeo.org/postgis/tags/2.0.0/</developerConnection>
++		<url>http://trac.osgeo.org/postgis/browser/tags/2.0.3</url>
++		<connection>scm:svn:http://svn.osgeo.org/postgis/tags/2.0.3/</connection>
++		<developerConnection>scm:svn:http://svn.osgeo.org/postgis/tags/2.0.3/</developerConnection>
+ 	</scm>
+ 
+ 	<build>
+@@ -176,7 +176,7 @@
+   <properties>
+     <POSTGIS_MAJOR_VERSION>2</POSTGIS_MAJOR_VERSION>
+     <POSTGIS_MINOR_VERSION>0</POSTGIS_MINOR_VERSION>
+-    <POSTGIS_MICRO_VERSION>2SVN</POSTGIS_MICRO_VERSION>
++    <POSTGIS_MICRO_VERSION>3</POSTGIS_MICRO_VERSION>
+   </properties>
+ 	
+ </project>
