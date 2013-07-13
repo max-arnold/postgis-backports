@@ -42,9 +42,6 @@ debian/control: debian/control.in debian/pgversions
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-# Use maven in offline mode and with the local Debian repo
-MVN = mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
-
 MAJOR_VERSION = $(shell grep POSTGIS_MAJOR_VERSION Version.config|cut -d= -f2)
 MINOR_VERSION = $(shell grep POSTGIS_MINOR_VERSION Version.config|cut -d= -f2)
 MICRO_VERSION = $(shell grep POSTGIS_MICRO_VERSION Version.config|cut -d= -f2)
@@ -70,9 +67,6 @@ build-arch-stamp: configuration-stamp
 
 build-indep: build-indep-stamp
 build-indep-stamp: configuration-stamp
-#	PostGIS JDBC (with debug support)
-	cd $(CURDIR)/java/jdbc && $(MVN) package
-
 #	Let PostGIS create a perl script from postgis_restore.pl.in
 	$(MAKE) -C utils
 
@@ -116,7 +110,6 @@ clean:
 	rm -f raster/rt_pg/rtpostgis_drop.sql raster/rt_pg/rtpostgis_upgrade_cleanup.sql postgis/postgis_upgrade_20_minor.sql.in
 	[ -f doc/html/postgis.html.prev ] && mv doc/html/postgis.html.prev doc/html/postgis.html || true
 	[ ! -f GNUmakefile ] || $(MAKE) distclean || true
-	cd $(CURDIR)/java/jdbc && $(MVN) clean
 	$(MAKE) -C doc images-clean
 	rm -f $(CURDIR)/debian/*.postinst $(CURDIR)/debian/*.postrm
 	rm -f postgis/postgis_upgrade_20_minor.sql.in raster/rt_pg/rtpostgis_drop.sql \
