@@ -2,10 +2,10 @@ Description: Not sure why exactly we need this...
 Author: Markus Wanner <markus@bluegap.ch>
 Last-Update: 2013-04-14
 
-diff --git a/doc/Makefile b/doc/Makefile
-index 1128ab8..29eaacf 100644
---- a/doc/Makefile
-+++ b/doc/Makefile
+diff --git a/doc/Makefile.in b/doc/Makefile.in
+index 744dd21..6e07cfb 100644
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
 @@ -244,7 +244,7 @@ docs-uninstall:
  	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/postgis.html
  	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/README.postgis
