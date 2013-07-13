@@ -133,11 +133,6 @@ install-indep: build-indep
 
 	dh_install -i
 
-#	Link the resulting JAR file, so it's available via it's old
-#	name. (Even if postgis-jdbc.jar might be more appropriate.)
-	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
-		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
-
 install-arch: build-arch
 	dh_testdir
 	dh_testroot
