@@ -1,3 +1,9 @@
+postgis (2.0.3-1~precise2) precise; urgency=low
+
+  * Fix patches
+
+ -- Max Arnold <arnold.maxim@gmail.com>  Sun, 14 Jul 2013 03:11:41 +0700
+
 postgis (2.0.3-1~precise1) precise; urgency=low
 
   * Backport to Ubuntu Precise
