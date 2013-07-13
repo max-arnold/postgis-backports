@@ -1,3 +1,9 @@
+postgis (2.0.3-1~precise1) precise; urgency=low
+
+  * Backport to Ubuntu Precise
+
+ -- Max Arnold <arnold.maxim@gmail.com>  Sat, 13 Jul 2013 19:36:31 +0700
+
 postgis (2.0.3-2~raring4) raring; urgency=medium
 
   * New launchpad build.
