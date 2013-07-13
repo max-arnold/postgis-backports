@@ -8,7 +8,7 @@ index e62f2d9..98c50ee 100644
  # PGXS information
 -PG_CONFIG = /usr/bin/pg_config 
 -PGXS := /usr/lib/postgresql/9.1/lib/pgxs/src/makefiles/pgxs.mk
-+PG_CONFIG = /usr/lib/postgresql/9.2/bin/pg_config
++PG_CONFIG = /usr/lib/postgresql/9.2/bin/pg_config 
 +PGXS := /usr/lib/postgresql/9.2/lib/pgxs/src/makefiles/pgxs.mk
  include $(PGXS)
  
