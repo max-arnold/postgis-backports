@@ -7,7 +7,7 @@ Uploaders: Stephen Frost <sfrost@debian.org>, Francesco Paolo
 Build-Depends: debhelper (>= 8), dpkg-dev (>= 1.16.1~), autotools-dev,
  flex, bison, libgeos-dev (>= 3.3.8~), libjson0-dev (>= 0.9~),
  libproj-dev (>= 4.5.0), libssl-dev, xsltproc, docbook, docbook-xsl,
- libcunit1-dev, dblatex, libxml2-dev (>= 2.5.0~),
+ libcunit1-dev, dblatex, libxml2-dev (>= 2.5.0~), imagemagick,
  libgdal-dev (>= 1.9.0~), postgresql-server-dev-all
 Standards-Version: 3.9.4
 Homepage: http://postgis.refractions.net/
