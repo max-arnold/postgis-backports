@@ -1,3 +1,2 @@
 # Ignore changes on auto-updated files
-extend-diff-ignore = "(^|/)(doc/html/image_src/Makefile|libtool|postgis/sqldefines.h|doc/html/images/.*\.png)$"
-
+extend-diff-ignore = "(^|/)(doc/html/postgis\.html|doc/Makefile|doc/Makefile.comments|doc/html/image_src/Makefile|doc/html/images/.*\.png|libtool|postgis/sqldefines.h|config\.log|topology/test/load_topology-4326.sql|topology/test/load_topology.sql|topology/test/topo_predicates.sql)$"

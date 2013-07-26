@@ -1,25 +1,13 @@
-diff --git a/doc/Makefile.comments b/doc/Makefile.comments
-index e62f2d9..98c50ee 100644
---- a/doc/Makefile.comments
-+++ b/doc/Makefile.comments
-@@ -21,8 +21,8 @@ MODULEDIR=contrib/$(MODULE_doc)
- DATA_built=postgis_comments.sql raster_comments.sql topology_comments.sql
- 
- # PGXS information
--PG_CONFIG = /usr/bin/pg_config 
--PGXS := /usr/lib/postgresql/9.1/lib/pgxs/src/makefiles/pgxs.mk
-+PG_CONFIG = /usr/lib/postgresql/9.2/bin/pg_config 
-+PGXS := /usr/lib/postgresql/9.2/lib/pgxs/src/makefiles/pgxs.mk
- include $(PGXS)
- 
- # PGXS override feature. The ability to allow PostGIS to install itself
-diff --git a/postgis/sqldefines.h b/postgis/sqldefines.h
-index acc610a..466e309 100644
+Description: Update various files to Debian versions
+ There are a number of #defines and similar which change based on the
+ specific versions of software being compiled against.  Update these to
+ match the current Debian build environment.
+Author: Stephen Frost <sfrost@snowman.net>
+Last-Update: 2012-10-12
+
 --- a/postgis/sqldefines.h
 +++ b/postgis/sqldefines.h
-@@ -6,9 +6,9 @@
- /*
-  * Define just the version numbers; otherwise we get some strange substitutions in postgis.sql.in
+@@ -8,9 +8,9 @@
   */
 -#define POSTGIS_PGSQL_VERSION 91
 +#define POSTGIS_PGSQL_VERSION 92
@@ -28,4 +16,18 @@ index acc610a..466e309 100644
 +#define POSTGIS_PROJ_VERSION 47
  #define POSTGIS_LIB_VERSION 2.0.3
  #define POSTGIS_LIBXML2_VERSION 2.7.8
+ 
+ /*
+  * Define the build date and the version number
+--- a/doc/Makefile.comments
++++ b/doc/Makefile.comments
+@@ -21,7 +21,7 @@
+ DATA_built=postgis_comments.sql raster_comments.sql topology_comments.sql
+ 
+ # PGXS information
+-PG_CONFIG = /usr/bin/pg_config 
+-PGXS := /usr/lib/postgresql/9.1/lib/pgxs/src/makefiles/pgxs.mk
++PG_CONFIG = /usr/lib/postgresql/9.2/bin/pg_config 
++PGXS := /usr/lib/postgresql/9.2/lib/pgxs/src/makefiles/pgxs.mk
+ include $(PGXS)
  

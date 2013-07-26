@@ -41,7 +41,7 @@ Last-Update: 2013-04-14
 +							<addClasspath>true</addClasspath>
 +						</manifest>
 +						<manifestEntries>
-+							<Class-Path>/usr/share/java/postgresql-jdbc.jar</Class-Path>
++							<Class-Path>/usr/share/java/postgresql-jdbc3.jar</Class-Path>
 +						</manifestEntries>
 +					</archive>
 +				</configuration>
@@ -57,7 +57,7 @@ Last-Update: 2013-04-14
 -			<version>9.1-901.jdbc3</version>
 +			<version>9.2-901.jdbc3</version>
 +			<scope>system</scope>
-+			<systemPath>/usr/share/java/postgresql-jdbc3-9.2.jar</systemPath>
++			<systemPath>/usr/share/java/postgresql-jdbc3.jar</systemPath>
  		</dependency>
  	</dependencies>
  	<reporting>

@@ -1,28 +1,53 @@
-postgis (2.0.3-1~precise2) precise; urgency=low
+postgis (2.0.3-14.pgdg12.4+1) precise; urgency=low
 
-  * Fix patches
+  * Tweak package from apt.postgresql.org
 
- -- Max Arnold <arnold.maxim@gmail.com>  Sun, 14 Jul 2013 03:11:41 +0700
+ -- Max Arnold <arnold.maxim@gmail.com>  Fri, 26 Jul 2013 13:11:08 +0700
 
-postgis (2.0.3-1~precise1) precise; urgency=low
+postgis (2.0.3-4.pgdg12.4+1) precise-pgdg; urgency=low
 
-  * Backport to Ubuntu Precise
+  * Rebuild for precise-pgdg (jenkins-postgis-source-
+    distribution=precise-12, git revision
+    476b1b5efb4923d2a44d615459b099db7aca3092)
 
- -- Max Arnold <arnold.maxim@gmail.com>  Sat, 13 Jul 2013 19:36:31 +0700
+ -- apt.postgresql.org autobuilder <myon@debian.org>  Tue, 23 Jul 2013 10:48:21 +0200
 
-postgis (2.0.3-2~raring4) raring; urgency=medium
+postgis (2.0.3-4) unstable; urgency=low
 
-  * New launchpad build.
+  * Build-Deps: also make libmaven-clean-plugin-java and
+    libmaven-jar-plugin-java a full build dependency. Fixes another FTBFS.
 
- -- Jerome Villeneuve Larouche <jlarouche@mapgears.com>  Thu, 04 Jul 2013 11:58:02 -0400
+ -- Markus Wanner <markus@bluegap.ch>  Tue, 23 Jul 2013 09:40:35 +0200
 
-postgis (2.0.3-2~raring3) raring; urgency=medium
+postgis (2.0.3-3) unstable; urgency=low
 
-  * Launchpad build for Raring.
-  * Removed build-depends-indep as it seems to cause problem while cleaning in
-    Launchpad build env.
+  [Mònica Ramírez Arceda]
+  * Add a manpage for shp2pgsql-gui. Closes: #656012.
 
- -- Jerome Villeneuve Larouche <jlarouche@mapgears.com>  Wed, 03 Jul 2013 16:14:42 -0400
+  [Markus Wanner]
+  * Add fix-test-case-for-i386 patch, back-ported from upstream's
+    r10642. Fixes tests on i386 (and possibly other non-amd64
+    architectures).
+
+ -- Markus Wanner <markus@bluegap.ch>  Fri, 19 Jul 2013 10:59:47 +0200
+
+postgis (2.0.3-2) unstable; urgency=low
+
+  * Correct dependency on libgdal-dev, allowing the old, now transitional
+    libgdal1-dev to satisfy it as well.
+  * Build-Deps: correct libgeos-dev version requirement, depend on
+    libpostgresql-jdbc-java instead of (transitional) libpg-java.
+  * Tweak extend-diff-ignore to save us a copying dance in
+    debian/rules. Cleanup the 'clean' target a bit.
+  * Make maven2 a full build-dep (not just B-D-Indep). Closes: #714712.
+  * Pass an LD_PRELOAD to postgres when running 'make check', so the
+    postgis library being loaded can find liblwgeom (and doesn't try to
+    use a pre-installed one).
+  * Add postgresql-common build dependency, as the above needs a relatively
+    new pg_createcluster feature.
+  * Drop libpostgresql-jdbc-java from B-D-I, it's already in B-D.
+
+ -- Markus Wanner  <markus@bluegap.ch>  Thu, 18 Jul 2013 20:29:41 +0200
 
 postgis (2.0.3-1) unstable; urgency=low
 
@@ -37,8 +62,9 @@ postgis (2.0.3-1) unstable; urgency=low
     liblwgeom/lwout_wkt.c.
   * Ignore changes of some auto-updated files (via source/options). Let
     debian/rules cleanup some more generated files.
-  * rules: swap dh_makeshlibs and dh_installdeb, build in the appropriate
-    build targets, let install only install pre-built stuff.
+  * rules: use a separate build directory per Postgres version, swap
+    dh_makeshlibs and dh_installdeb, build in the appropriate build targets,
+    let install only install pre-built stuff.
   * Compile the postgis jdbc java library again, using maven directly. Add
     required Build-Depends-Indeps.
   * Separate large SQL scripts and perl utils. Put them in their own

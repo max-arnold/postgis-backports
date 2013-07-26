@@ -1,0 +1,18 @@
+Description: sanitize test case for architectures other than amd64
+ Stop penalizing windows 9.2 32-bit when it gives a stupid answer to
+ an ill-defined question. Change to be a well-defined question.
+Author: Regina Obe <lr@pcorp.us>
+Last-Update: 2013-07-10
+Origin: http://trac.osgeo.org/postgis/changeset/10642
+
+--- a/regress/lwgeom_regress.sql
++++ b/regress/lwgeom_regress.sql
+@@ -92,7 +92,7 @@
+ 
+ 
+ SELECT ST_extent(geometry(wkb_ndr)) from test_data;
+-SELECT ST_3DExtent(geometry(wkb_ndr)) from test_data;
++SELECT ST_3DExtent(geometry(wkb_ndr)) from test_data WHERE ST_NDims(wkb_ndr) > 2;
+ SELECT ST_mem_size(ST_collect(ST_force_2d(geometry(wkb_ndr)))) from test_data;
+ SELECT ST_mem_size(ST_collect(ST_force_3dz(geometry(wkb_ndr)))) from test_data;
+ SELECT ST_mem_size(ST_collect(ST_force_4d(ST_force_2d(geometry(wkb_ndr))))) from test_data;
