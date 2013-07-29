@@ -21,7 +21,7 @@ Last-Update: 2012-10-12
   * Define the build date and the version number
 --- a/doc/Makefile.comments
 +++ b/doc/Makefile.comments
-@@ -21,7 +21,7 @@
+@@ -21,8 +21,8 @@ MODULEDIR=contrib/$(MODULE_doc)
  DATA_built=postgis_comments.sql raster_comments.sql topology_comments.sql
  
  # PGXS information
@@ -31,3 +31,4 @@ Last-Update: 2012-10-12
 +PGXS := /usr/lib/postgresql/9.2/lib/pgxs/src/makefiles/pgxs.mk
  include $(PGXS)
  
+ # PGXS override feature. The ability to allow PostGIS to install itself
