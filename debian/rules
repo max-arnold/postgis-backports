@@ -47,9 +47,6 @@ debian/control: debian/control.in debian/pgversions
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-# Use maven in offline mode and with the local Debian repo
-MVN = mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
-
 MAJOR_VERSION = $(shell grep POSTGIS_MAJOR_VERSION Version.config|cut -d= -f2)
 MINOR_VERSION = $(shell grep POSTGIS_MINOR_VERSION Version.config|cut -d= -f2)
 MICRO_VERSION = $(shell grep POSTGIS_MICRO_VERSION Version.config|cut -d= -f2)
@@ -104,9 +101,6 @@ build-arch-stamp: configuration-stamp
 
 build-indep: build-indep-stamp
 build-indep-stamp: configuration-stamp
-#	PostGIS JDBC (with debug support)
-	cd $(CURDIR)/java/jdbc && $(MVN) package
-
 #	Let PostGIS create a perl script from postgis_restore.pl.in
 	$(MAKE) -C utils
 
@@ -165,7 +159,6 @@ clean: debian/control
 	done)
 
 	[ ! -f GNUmakefile ] || $(MAKE) distclean || true
-	cd $(CURDIR)/java/jdbc && $(MVN) clean
 	[ ! -f GNUmakefile ] || $(MAKE) -C doc images-clean || true
 
 #	Cleanup after the Makefile
@@ -207,11 +200,6 @@ install-indep: build-indep
 			PGSQL_DOCDIR=/usr/share/doc
 
 	dh_install -i
-
-#	Link the resulting JAR file, so it's available via it's old
-#	name. (Even if postgis-jdbc.jar might be more appropriate.)
-	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
-		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
 
 install-arch: build-arch
 	dh_testdir

@@ -1,3 +1,9 @@
+postgis (2.0.3-14.pgdg12.4+2) precise; urgency=low
+
+  * Disable java plugin (fails to build on amd64 ppa due to missing libmaven-resources-plugin-java)
+
+ -- Max Arnold <arnold.maxim@gmail.com>  Mon, 29 Jul 2013 19:04:18 +0700
+
 postgis (2.0.3-14.pgdg12.4+1) precise; urgency=low
 
   * Tweak package from apt.postgresql.org
