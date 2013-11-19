@@ -5,17 +5,12 @@ Maintainer: Debian GIS Project <pkg-grass-devel@lists.alioth.debian.org>
 Uploaders: Stephen Frost <sfrost@debian.org>, Francesco Paolo
  Lovergine <frankie@debian.org>, Markus Wanner <markus@bluegap.ch>
 Build-Depends: debhelper (>= 8), dpkg-dev (>= 1.16.1~), autotools-dev,
- flex, bison, libgeos-dev (>= 3.3), libjson0-dev (>= 0.9~),
+ flex, bison, libgeos-dev (>= 3.4), libjson0-dev (>= 0.9~),
  libproj-dev (>= 4.6.0), libssl-dev, xsltproc, docbook, docbook-xsl,
  imagemagick, libcunit1-dev, dblatex, libxml2-dev (>= 2.5.0~),
- libgtk2.0-dev, libgdal-dev (>= 1.9.0~) | libgdal1-dev (>= 1.9.0~),
+ libgdal-dev (>= 1.10.0~) | libgdal1-dev (>= 1.10.0~),
  postgresql-server-dev-all, postgresql-common (>= 148~), postgresql
-Build-Depends-Indep: openjdk-8-jdk | openjdk-7-jdk | openjdk-6-jdk,
- libpostgresql-jdbc-java, fastjar, libjts-java (>= 1.7), maven2,
- libmaven-clean-plugin-java, libmaven-jar-plugin-java,
- libsurefire-java, libmaven-compiler-plugin-java,
- libmaven-resources-plugin-java
-Standards-Version: 3.9.4
+Standards-Version: 3.9.3
 Homepage: http://postgis.refractions.net/
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-grass/postgis.git
 Vcs-Git: git://anonscm.debian.org/pkg-grass/postgis.git
@@ -48,23 +43,6 @@ Description: Geographic objects support for PostgreSQL -- documentation
  "Simple Features Specification for SQL".
  .
  This package contains the PostGIS documentation.
-
-Package: libpostgis-java
-Architecture: all
-Section: java
-Depends: libpostgresql-jdbc-java, ${misc:Depends}
-Suggests: postgresql-9.3-postgis-2.1
-Breaks: libpostgis-jdbc, libpostgisjava, postgresql-postgis-java
-Replaces: libpostgis-jdbc, libpostgisjava, postgresql-postgis-java
-Description: Geographic objects support for PostgreSQL -- JDBC support
- PostGIS adds support for geographic objects to the PostgreSQL
- object-relational database. In effect, PostGIS "spatially enables"
- the PostgreSQL server, allowing it to be used as a backend spatial
- database for geographic information systems (GIS), much like ESRI's
- SDE or Oracle's Spatial extension. PostGIS follows the OpenGIS
- "Simple Features Specification for SQL".
- .
- This package contains JDBC support for PostGIS.
 
 Package: liblwgeom-2.1.0
 Architecture: any

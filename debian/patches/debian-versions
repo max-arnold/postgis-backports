@@ -5,17 +5,6 @@ Description: Update various files to Debian versions
 Author: Stephen Frost <sfrost@snowman.net>
 Last-Update: 2013-07-22
 
---- a/postgis/sqldefines.h
-+++ b/postgis/sqldefines.h
-@@ -10,7 +10,7 @@
- #define POSTGIS_GEOS_VERSION 35
- #define POSTGIS_PROJ_VERSION 47
- #define POSTGIS_LIB_VERSION 2.1.0
--#define POSTGIS_LIBXML2_VERSION 2.7.8
-+#define POSTGIS_LIBXML2_VERSION 2.8.0
- 
- /*
-  * Define the build date and the version number
 --- a/doc/Makefile.comments
 +++ b/doc/Makefile.comments
 @@ -21,8 +21,8 @@
@@ -24,8 +13,8 @@ Last-Update: 2013-07-22
  # PGXS information
 -PG_CONFIG = /var/lib/jenkins/workspace/pg/rel/pg9.2w64/bin/pg_config 
 -PGXS := /var/lib/jenkins/workspace/pg/rel/pg9.2w64/lib/postgresql/pgxs/src/makefiles/pgxs.mk
-+PG_CONFIG = /usr/lib/postgresql/9.1/bin/pg_config
-+PGXS := /usr/lib/postgresql/9.1/lib/pgxs/src/makefiles/pgxs.mk
++PG_CONFIG = /usr/lib/postgresql/9.3/bin/pg_config
++PGXS := /usr/lib/postgresql/9.3/lib/pgxs/src/makefiles/pgxs.mk
  include $(PGXS)
  
  # PGXS override feature. The ability to allow PostGIS to install itself
