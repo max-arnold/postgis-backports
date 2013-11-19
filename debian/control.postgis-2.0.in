@@ -1,0 +1,10 @@
+Package: postgresql-PGVERSION-postgis-2.0-scripts
+Architecture: all
+Depends: ${misc:Depends}
+Description: PostGIS 2.0 for PostgreSQL PGVERSION -- scripts -- dummy package
+ This package contained the scripts for PostGIS version 2.0, that's
+ now deprecated. It extended PostgreSQL PGVERSION.
+ .
+ This is a transitional dummy package. It can safely be removed
+ together with the dependent postgresql-PGVERSION-postgis package.
+

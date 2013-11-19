@@ -1,22 +1,97 @@
-postgis (2.0.3-14.pgdg12.4+2) precise; urgency=low
-
-  * Disable java plugin (fails to build on amd64 ppa due to missing libmaven-resources-plugin-java)
-
- -- Max Arnold <arnold.maxim@gmail.com>  Mon, 29 Jul 2013 19:04:18 +0700
-
-postgis (2.0.3-14.pgdg12.4+1) precise; urgency=low
-
-  * Tweak package from apt.postgresql.org
-
- -- Max Arnold <arnold.maxim@gmail.com>  Fri, 26 Jul 2013 13:11:08 +0700
-
-postgis (2.0.3-4.pgdg12.4+1) precise-pgdg; urgency=low
+postgis (2.1.0-4.pgdg12.4+1) precise-pgdg; urgency=low
 
   * Rebuild for precise-pgdg (jenkins-postgis-source-
-    distribution=precise-12, git revision
-    476b1b5efb4923d2a44d615459b099db7aca3092)
+    distribution=precise-33, git revision
+    580d6ec8d3b904f31aa317a778077d6a09b96fc2)
 
- -- apt.postgresql.org autobuilder <myon@debian.org>  Tue, 23 Jul 2013 10:48:21 +0200
+ -- apt.postgresql.org autobuilder <myon@debian.org>  Sun, 20 Oct 2013 22:20:38 +0200
+
+postgis (2.1.0-4) unstable; urgency=low
+
+  * Rename pg-X.Y-postgis-2.1-scripts package to exclude PostGIS version
+    number.
+  * Add transitional postgis-2.0-scripts packages for all Postgres
+    versions supported by the old *and* new PostGIS version. These
+    effectively remove scripts and the postgis.control file prior to
+    installing a newer *-postgis-scripts package, which Breaks+Replaces
+    the old one. Add appropriate notification messages on upgrade.
+  * Add patches upstream-r11983 and upstream-r11990 to try some more
+    big-endian fixes.
+
+ -- Markus Wanner <markus@bluegap.ch>  Sun, 20 Oct 2013 20:34:51 +0200
+
+postgis (2.1.0-3) unstable; urgency=low
+
+  * Update patch upstream-r11934 to cover rev 11979, instead. It seems to
+    be a more thorough fix. Add minor-r11979-correction patch to account
+    for some new WARNINGs, that didn't appear, before.
+
+ -- Markus Wanner <markus@bluegap.ch>  Thu, 26 Sep 2013 15:36:22 +0200
+
+postgis (2.1.0-2) unstable; urgency=low
+
+  * Correct generation of debian/control: drop an unnecessary grep in
+    debian/pgversions. I broke it when changing to '9.0+'.
+  * Copy binaries for the common binary package 'postgis' from the newest
+    version, rather than hardcoding 9.1.
+  * Add experimental patch from upstream to increase pass rate on
+    non-Intel architectures (upstream-r11934).
+  * Add a description and some tags to patch fix-manpage.
+
+ -- Markus Wanner <markus@bluegap.ch>  Tue, 10 Sep 2013 21:53:57 +0200
+
+postgis (2.1.0-1) unstable; urgency=low
+
+  * New upstream release
+  * Update pgversions, use '9.0+' feature of pg-common >= 148.
+  * Adjust liblwgeom version and symbols for new version.
+  * Update build dependencies according to README.postgis (FIXME: prefer
+    geos-3.4)
+  * Adapt patches debian-versions, java-version-fix, link-liblwgeom,
+    honor-build-flags.
+  * Refresh line numbers on patches: fixmakedoc, fix-spelling.
+  * Drop patches: fix-manpages, fix-test-case-for-i386,
+    fix-tests-on-big-endian: applied upstream.
+  * shp2pgsql-gui.1 is now provided upstream. Drop the debian variant. Add
+    a patch stripping an initial UTF-8 marker from the upstream file.
+
+ -- Markus Wanner <markus@bluegap.ch>  Mon, 26 Aug 2013 22:02:22 +0200
+
+postgis (2.0.3-8) unstable; urgency=low
+
+  * Don't err out when setting JAVA_HOME, but only later in
+    build-indep. So arch-only builds that don't have (nor need) the java
+    cruft available can succeed.
+
+ -- Markus Wanner <markus@bluegap.ch>  Wed, 07 Aug 2013 22:10:02 +0200
+
+postgis (2.0.3-7) unstable; urgency=low
+
+  * Let rules check for different OpenJDK versions supported and set
+    JAVA_HOME accordingly.
+  * Use a simple rm rather than invoking maven. Allows us to move all java
+    related Build-Depends back to Build-Depends-Indep.
+
+ -- Markus Wanner <markus@bluegap.ch>  Wed, 07 Aug 2013 13:12:25 +0200
+
+postgis (2.0.3-6) unstable; urgency=low
+
+  * Cleanup check target, reduce duplication.
+  * Re-add postgis_restore.pl from the utils directory. Closes: #718358.
+  * Add patch fix-tests-on-big-endian to fix unit tests on big
+    endian. Closes: #718749.
+
+ -- Markus Wanner <markus@bluegap.ch>  Wed, 06 Aug 2013 20:29:42 +0200
+
+postgis (2.0.3-5) unstable; urgency=low
+
+  * Build-Deps: rather than default-jdk, depend on openjdk 6 or 7, as the
+    gcj-jdk didn't work.
+  * Add patch fix-kfreebsd to get rid of a compilation error on kFreeBSD.
+  * rules: if 'make check' fails, print all the diffs of failing tests on
+    stdout.
+
+ -- Markus Wanner <markus@bluegap.ch>  Thu, 25 Jul 2013 21:45:17 +0200
 
 postgis (2.0.3-4) unstable; urgency=low
 

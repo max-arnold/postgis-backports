@@ -1,3 +1,7 @@
-# Note that postgis-2.0 is not recommended for 8.4 and 9.0, works fine
-# with 9.1 and 9.2, but doesn't work with 9.3, yet.
-9.2
+# Note that postgis-2.1 is not recommended for 9.0, anymore.
+#
+# Also note: Listing each version individually triggers an issue on
+# distributions where the default version of Postgres isn't the newest
+# one. '9.0+' circumvents that issue with current pg_buildext.
+#
+9.0+

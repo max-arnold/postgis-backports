@@ -1,4 +1,4 @@
-liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
+liblwgeom-2.1.0.so liblwgeom-2.1.0 #MINVER#
  GEOS2LWGEOM@Base 2.0.0
  LWGEOM2GEOS@Base 2.0.0
  LWGEOM_GEOS_buildArea@Base 2.0.0
@@ -9,16 +9,17 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  box3d_to_gbox@Base 2.0.0
  bytes_from_hexbytes@Base 2.0.0
  cart2geog@Base 2.0.0
+ circ_tree_contains_point@Base 2.1.0
+ circ_tree_distance_tree@Base 2.1.0
+ circ_tree_free@Base 2.1.0
+ circ_tree_new@Base 2.1.0
+ circ_tree_print@Base 2.1.0
  clairaut_cartesian@Base 2.0.0
  clairaut_geographic@Base 2.0.0
  clamp_srid@Base 2.0.0
  closest_point_on_segment@Base 2.0.0
  crosses_dateline@Base 2.0.0
- default_allocator@Base 2.0.0
- default_errorreporter@Base 2.0.0
- default_freeor@Base 2.0.0
- default_noticereporter@Base 2.0.0
- default_reallocator@Base 2.0.0
+ decode_geohash_bbox@Base 2.1.0
  define_plane@Base 2.0.0
  deparse_hex@Base 2.0.0
  distance2d_pt_pt@Base 2.0.0
@@ -31,9 +32,13 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  edge_distance_to_edge@Base 2.0.0
  edge_distance_to_point@Base 2.0.0
  edge_intersection@Base 2.0.0
+ edge_intersects@Base 2.1.0
  edge_point_in_cone@Base 2.0.0
  edge_point_on_plane@Base 2.0.0
  error_if_srid_mismatch@Base 2.0.0
+ gbox_angular_height@Base 2.1.0
+ gbox_angular_width@Base 2.1.0
+ gbox_centroid@Base 2.1.0
  gbox_clone@Base 2.0.2
  gbox_contains_point3d@Base 2.0.0
  gbox_copy@Base 2.0.0
@@ -43,6 +48,8 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  gbox_from_string@Base 2.0.0
  gbox_geocentric_slow@Base 2.0.0
  gbox_init@Base 2.0.0
+ gbox_init_point3d@Base 2.1.0
+ gbox_is_valid@Base 2.1.0
  gbox_merge@Base 2.0.0
  gbox_merge_point3d@Base 2.0.0
  gbox_new@Base 2.0.0
@@ -57,10 +64,12 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  geographic_point_equals@Base 2.0.0
  geographic_point_init@Base 2.0.0
  geohash_point@Base 2.0.0
+ geohash_point_as_int@Base 2.1.0
  geometry_type_from_string@Base 2.0.0
  geomtype_struct_array@Base 2.0.0
  getMachineEndian@Base 2.0.0
  getPoint2d@Base 2.0.0
+ getPoint2d_cp@Base 2.1.0
  getPoint2d_p@Base 2.0.0
  getPoint2d_p_ro@Base 2.0.0
  getPoint3dm@Base 2.0.0
@@ -90,37 +99,53 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  gserialized_set_srid@Base 2.0.0
  gserialized_to_string@Base 2.0.0
  hexbytes_from_bytes@Base 2.0.0
- init_allocator@Base 2.0.0
- init_errorreporter@Base 2.0.0
- init_freeor@Base 2.0.0
- init_noticereporter@Base 2.0.0
- init_reallocator@Base 2.0.0
  interpolate_point4d@Base 2.0.0
  latitude_degrees_normalize@Base 2.0.0
  latitude_radians_normalize@Base 2.0.0
+ ll2cart@Base 2.1.0
  longitude_degrees_normalize@Base 2.0.0
  longitude_radians_normalize@Base 2.0.0
+ lw_arc_calculate_gbox_cartesian_2d@Base 2.1.0
+ lw_arc_center@Base 2.1.0
+ lw_arc_is_pt@Base 2.1.0
+ lw_arc_length@Base 2.1.0
+ lw_arc_side@Base 2.1.0
  lw_asprintf@Base 2.0.0
+ lw_dist2d_arc_arc@Base 2.1.0
  lw_dist2d_check_overlap@Base 2.0.0
+ lw_dist2d_circstring_circstring@Base 2.1.0
+ lw_dist2d_circstring_curvepoly@Base 2.1.0
+ lw_dist2d_circstring_poly@Base 2.1.0
  lw_dist2d_comp@Base 2.0.0
+ lw_dist2d_curvepoly_curvepoly@Base 2.1.0
  lw_dist2d_distanceline@Base 2.0.0
  lw_dist2d_distancepoint@Base 2.0.0
+ lw_dist2d_distpts_init@Base 2.1.0
  lw_dist2d_distribute_bruteforce@Base 2.0.0
  lw_dist2d_distribute_fast@Base 2.0.0
  lw_dist2d_fast_ptarray_ptarray@Base 2.0.0
+ lw_dist2d_line_circstring@Base 2.1.0
+ lw_dist2d_line_curvepoly@Base 2.1.0
  lw_dist2d_line_line@Base 2.0.0
  lw_dist2d_line_poly@Base 2.0.0
+ lw_dist2d_point_circstring@Base 2.1.0
+ lw_dist2d_point_curvepoly@Base 2.1.0
  lw_dist2d_point_line@Base 2.0.0
  lw_dist2d_point_point@Base 2.0.0
  lw_dist2d_point_poly@Base 2.0.0
+ lw_dist2d_poly_curvepoly@Base 2.1.0
  lw_dist2d_poly_poly@Base 2.0.0
  lw_dist2d_pre_seg_seg@Base 2.0.0
+ lw_dist2d_pt_arc@Base 2.1.0
  lw_dist2d_pt_pt@Base 2.0.0
  lw_dist2d_pt_ptarray@Base 2.0.0
+ lw_dist2d_pt_ptarrayarc@Base 2.1.0
  lw_dist2d_pt_seg@Base 2.0.0
- lw_dist2d_ptarray_poly@Base 2.0.0
  lw_dist2d_ptarray_ptarray@Base 2.0.0
+ lw_dist2d_ptarray_ptarrayarc@Base 2.1.0
+ lw_dist2d_ptarrayarc_ptarrayarc@Base 2.1.0
  lw_dist2d_recursive@Base 2.0.0
+ lw_dist2d_seg_arc@Base 2.1.0
  lw_dist2d_seg_seg@Base 2.0.0
  lw_dist2d_selected_seg_seg@Base 2.0.0
  lw_dist3d_distanceline@Base 2.0.0
@@ -142,13 +167,14 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lw_dist3d_seg_seg@Base 2.0.0
  lw_get_int32_t@Base 2.0.0
  lw_get_uint32_t@Base 2.0.0
- lw_segment_envelope_intersects@Base 2.0.0
+ lw_pt_in_arc@Base 2.1.0
+ lw_pt_in_seg@Base 2.1.0
+ lw_seg_length@Base 2.1.0
  lw_segment_intersects@Base 2.0.0
  lw_segment_side@Base 2.0.0
  lw_vasprintf@Base 2.0.0
  lwalloc@Base 2.0.0
  lwalloc_var@Base 2.0.0
- lwcircle_center@Base 2.0.0
  lwcircstring_addpoint@Base 2.0.0
  lwcircstring_as_lwgeom@Base 2.0.0
  lwcircstring_clone@Base 2.0.0
@@ -157,6 +183,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwcircstring_free@Base 2.0.0
  lwcircstring_from_lwmpoint@Base 2.0.0
  lwcircstring_from_lwpointarray@Base 2.0.0
+ lwcircstring_get_lwpoint@Base 2.1.0
  lwcircstring_is_closed@Base 2.0.0
  lwcircstring_is_empty@Base 2.0.0
  lwcircstring_length@Base 2.0.0
@@ -189,9 +216,11 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwcollection_segmentize2d@Base 2.0.0
  lwcollection_segmentize@Base 2.0.0
  lwcollection_simplify@Base 2.0.0
+ lwcollection_startpoint@Base 2.1.0
  lwcompound_add_lwgeom@Base 2.0.0
  lwcompound_as_lwgeom@Base 2.0.0
  lwcompound_construct_empty@Base 2.0.0
+ lwcompound_contains_point@Base 2.1.0
  lwcompound_is_closed@Base 2.0.0
  lwcompound_length@Base 2.0.0
  lwcompound_length_2d@Base 2.0.0
@@ -200,6 +229,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwcurvepoly_area@Base 2.0.0
  lwcurvepoly_as_lwgeom@Base 2.0.0
  lwcurvepoly_construct_empty@Base 2.0.0
+ lwcurvepoly_construct_from_lwpoly@Base 2.1.0
  lwcurvepoly_perimeter@Base 2.0.0
  lwcurvepoly_perimeter_2d@Base 2.0.0
  lwcurvepoly_segmentize@Base 2.0.0
@@ -229,6 +259,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwgeom_as_multi@Base 2.0.0
  lwgeom_azumith_spheroid@Base 2.0.0
  lwgeom_buildarea@Base 2.0.0
+ lwgeom_calculate_circ_tree@Base 2.1.0
  lwgeom_calculate_gbox@Base 2.0.0
  lwgeom_calculate_gbox_cartesian@Base 2.0.0
  lwgeom_calculate_gbox_geodetic@Base 2.0.0
@@ -237,9 +268,11 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwgeom_clone@Base 2.0.0
  lwgeom_clone_deep@Base 2.0.0
  lwgeom_construct_empty@Base 2.0.0
+ lwgeom_contains_point@Base 2.1.0
  lwgeom_count_rings@Base 2.0.0
  lwgeom_count_vertices@Base 2.0.0
  lwgeom_covers_lwgeom_sphere@Base 2.0.0
+ lwgeom_delaunay_triangulation@Base 2.1.0
  lwgeom_desegmentize@Base 2.0.0
  lwgeom_difference@Base 2.0.0
  lwgeom_dimension@Base 2.0.0
@@ -256,11 +289,12 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwgeom_force_4d@Base 2.0.0
  lwgeom_force_clockwise@Base 2.0.0
  lwgeom_force_dims@Base 2.0.0
+ lwgeom_force_geodetic@Base 2.1.0
+ lwgeom_force_sfs@Base 2.1.0
  lwgeom_free@Base 2.0.0
+ lwgeom_from_geojson@Base 2.1.0
  lwgeom_from_gserialized@Base 2.0.0
  lwgeom_from_hexwkb@Base 2.0.0
- lwgeom_from_tgeom@Base 2.0.0
- lwgeom_from_tserialized@Base 2.0.0
  lwgeom_from_wkb@Base 2.0.0
  lwgeom_from_wkb_state@Base 2.0.0
  lwgeom_from_wkt@Base 2.0.0
@@ -272,18 +306,17 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwgeom_geos_version@Base 2.0.0
  lwgeom_get_bbox@Base 2.0.0
  lwgeom_get_srid@Base 2.0.0
+ lwgeom_get_type@Base 2.1.0
  lwgeom_has_arc@Base 2.0.0
  lwgeom_has_m@Base 2.0.0
  lwgeom_has_srid@Base 2.0.0
  lwgeom_has_z@Base 2.0.0
  lwgeom_homogenize@Base 2.0.0
- lwgeom_install_default_allocators@Base 2.0.0
  lwgeom_interpolate_point@Base 2.0.0
  lwgeom_intersection@Base 2.0.0
  lwgeom_is_closed@Base 2.0.0
  lwgeom_is_collection@Base 2.0.0
  lwgeom_is_empty@Base 2.0.0
- lwgeom_is_solid@Base 2.0.0
  lwgeom_length@Base 2.0.0
  lwgeom_length_2d@Base 2.0.0
  lwgeom_length_spheroid@Base 2.0.0
@@ -311,19 +344,21 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwgeom_perimeter@Base 2.0.0
  lwgeom_perimeter_2d@Base 2.0.0
  lwgeom_project_spheroid@Base 2.0.0
- lwgeom_pt_inside_circle@Base 2.0.0
  lwgeom_release@Base 2.0.0
  lwgeom_remove_repeated_points@Base 2.0.0
  lwgeom_reverse@Base 2.0.0
  lwgeom_same@Base 2.0.0
  lwgeom_segmentize2d@Base 2.0.0
  lwgeom_segmentize@Base 2.0.0
+ lwgeom_segmentize_sphere@Base 2.1.0
  lwgeom_set_geodetic@Base 2.0.0
+ lwgeom_set_handlers@Base 2.1.0
  lwgeom_set_srid@Base 2.0.0
  lwgeom_sharedpaths@Base 2.0.0
  lwgeom_simplify@Base 2.0.0
  lwgeom_snap@Base 2.0.0
  lwgeom_split@Base 2.0.0
+ lwgeom_startpoint@Base 2.1.0
  lwgeom_summary@Base 2.0.0
  lwgeom_symdifference@Base 2.0.0
  lwgeom_to_ewkt@Base 2.0.0
@@ -412,6 +447,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwpoint_get_x@Base 2.0.0
  lwpoint_get_y@Base 2.0.0
  lwpoint_get_z@Base 2.0.0
+ lwpoint_inside_circle@Base 2.1.0
  lwpoint_is_empty@Base 2.0.0
  lwpoint_make2d@Base 2.0.0
  lwpoint_make3dm@Base 2.0.0
@@ -446,6 +482,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwpoly_same@Base 2.0.0
  lwpoly_segmentize2d@Base 2.0.0
  lwpoly_simplify@Base 2.0.0
+ lwpoly_startpoint@Base 2.1.0
  lwpolygon_desegmentize@Base 2.0.0
  lwproj_from_string@Base 2.0.0
  lwpsurface_add_lwpoly@Base 2.0.0
@@ -457,6 +494,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  lwtin_add_lwtriangle@Base 2.0.0
  lwtin_as_lwgeom@Base 2.0.0
  lwtin_free@Base 2.0.0
+ lwtin_from_geos@Base 2.1.0
  lwtin_is_closed@Base 2.0.0
  lwtriangle_area@Base 2.0.0
  lwtriangle_as_lwgeom@Base 2.0.0
@@ -480,7 +518,9 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  next_double_up@Base 2.0.0
  next_float_down@Base 2.0.0
  next_float_up@Base 2.0.0
+ normalize@Base 2.1.0
  p2d_same@Base 2.0.0
+ p3d_same@Base 2.1.0
  p4d_same@Base 2.0.0
  parse_hex@Base 2.0.0
  parser_error_messages@Base 2.0.0
@@ -496,9 +536,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  printLWTIN@Base 2.0.0
  printLWTRIANGLE@Base 2.0.0
  printPA@Base 2.0.0
- printTGEOM@Base 2.0.0
  project_point_on_plane@Base 2.0.0
- pt_in_poly_2d@Base 2.0.0
  pt_in_ring_2d@Base 2.0.0
  pt_in_ring_3d@Base 2.0.0
  pta_desegmentize@Base 2.0.0
@@ -517,6 +555,8 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  ptarray_construct_empty@Base 2.0.0
  ptarray_construct_reference_data@Base 2.0.0
  ptarray_contains_point@Base 2.0.2
+ ptarray_contains_point_partial@Base 2.1.0
+ ptarray_contains_point_sphere@Base 2.1.0
  ptarray_flip_coordinates@Base 2.0.0
  ptarray_force_dims@Base 2.0.0
  ptarray_free@Base 2.0.0
@@ -524,11 +564,11 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  ptarray_has_m@Base 2.0.0
  ptarray_has_z@Base 2.0.0
  ptarray_insert_point@Base 2.0.0
+ ptarray_is_closed@Base 2.1.0
+ ptarray_is_closed_2d@Base 2.1.0
+ ptarray_is_closed_3d@Base 2.1.0
+ ptarray_is_closed_z@Base 2.1.0
  ptarray_isccw@Base 2.0.0
- ptarray_isclosed2d@Base 2.0.0
- ptarray_isclosed3d@Base 2.0.0
- ptarray_isclosed@Base 2.0.0
- ptarray_isclosedz@Base 2.0.0
  ptarray_length@Base 2.0.0
  ptarray_length_2d@Base 2.0.0
  ptarray_length_spheroid@Base 2.0.0
@@ -543,10 +583,14 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  ptarray_same@Base 2.0.0
  ptarray_segmentize2d@Base 2.0.0
  ptarray_set_point4d@Base 2.0.0
+ ptarray_signed_area@Base 2.1.0
  ptarray_simplify@Base 2.0.0
+ ptarray_startpoint@Base 2.1.0
  ptarray_substring@Base 2.0.0
  ptarray_to_GEOSCoordSeq@Base 2.0.0
  ptarray_transform@Base 2.0.0
+ ptarrayarc_contains_point@Base 2.1.0
+ ptarrayarc_contains_point_partial@Base 2.1.0
  rect_node_internal_new@Base 2.0.0
  rect_node_leaf_new@Base 2.0.0
  rect_tree_contains_point@Base 2.0.0
@@ -556,6 +600,7 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  ring_make_geos_friendly@Base 2.0.0
  robust_cross_product@Base 2.0.0
  signum@Base 2.0.0
+ sphere_direction@Base 2.1.0
  sphere_distance@Base 2.0.0
  sphere_distance_cartesian@Base 2.0.0
  sphere_project@Base 2.0.0
@@ -578,15 +623,11 @@ liblwgeom-2.0.3.so liblwgeom-2.0.3 #MINVER#
  stringbuffer_trim_trailing_white@Base 2.0.0
  stringbuffer_trim_trailing_zeroes@Base 2.0.0
  struct_cmp_by_measure@Base 2.0.0
- tgeom_deserialize@Base 2.0.0
- tgeom_free@Base 2.0.0
- tgeom_from_lwgeom@Base 2.0.0
- tgeom_new@Base 2.0.0
- tgeom_perimeter2d@Base 2.0.0
- tgeom_perimeter@Base 2.0.0
- tgeom_serialize@Base 2.0.0
  trim_trailing_zeros@Base 2.0.0
- tserialized_from_lwgeom@Base 2.0.0
+ unit_normal@Base 2.1.0
+ vector_angle@Base 2.1.0
+ vector_rotate@Base 2.1.0
+ vector_sum@Base 2.1.0
  wkt_lexer_close@Base 2.0.0
  wkt_lexer_init@Base 2.0.0
  wkt_lexer_read_srid@Base 2.0.0

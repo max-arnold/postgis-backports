@@ -6,7 +6,7 @@ Last-Update: 2013-04-23
 
 --- a/postgis/Makefile.in
 +++ b/postgis/Makefile.in
-@@ -65,14 +65,8 @@
+@@ -83,14 +83,8 @@
  OBJS=$(PG_OBJS)
  
  # Libraries to link into the module (proj, geos)
@@ -16,12 +16,12 @@ Last-Update: 2013-04-23
 -# to an existing liblwgeom.so in the PostgreSQL $libdir supplied by an
 -# older version of PostGIS, rather than with the static liblwgeom.a 
 -# supplied with newer versions of PostGIS
- PG_CPPFLAGS += @CPPFLAGS@ -I../liblwgeom -I../libpgcommon
--SHLIB_LINK_F = ../liblwgeom/.libs/liblwgeom.a ../libpgcommon/libpgcommon.a @SHLIB_LINK@ 
+ PG_CPPFLAGS += -I../liblwgeom -I../libpgcommon @CPPFLAGS@ -fPIC
+-SHLIB_LINK_F = ../libpgcommon/libpgcommon.a ../liblwgeom/.libs/liblwgeom.a @SHLIB_LINK@
 +SHLIB_LINK_F = -L../liblwgeom/.libs -llwgeom ../libpgcommon/libpgcommon.a @SHLIB_LINK@
  
- # Extra files to remove during 'make clean'
- EXTRA_CLEAN=$(SQL_OBJS) legacy_uninstall.sql
+ # Add SFCGAL Flags if defined
+ ifeq (@SFCGAL@,sfcgal)
 --- a/raster/rt_pg/Makefile.in
 +++ b/raster/rt_pg/Makefile.in
 @@ -27,14 +27,7 @@
@@ -42,7 +42,7 @@ Last-Update: 2013-04-23
  LIBPGCOMMON_LDFLAGS=../../libpgcommon/libpgcommon.a
 --- a/raster/loader/Makefile.in
 +++ b/raster/loader/Makefile.in
-@@ -31,7 +31,7 @@
+@@ -26,7 +26,7 @@
  
  RT_CORE=../rt_core
  

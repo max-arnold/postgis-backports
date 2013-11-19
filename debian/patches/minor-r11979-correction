@@ -1,0 +1,26 @@
+Description: pass big-endian online regression tests - adjust expectations
+ For some reason, these additional WARNINGs now appear, which r11979 doesn't
+ take into account.
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-09-25
+
+--- a/regress/regress_expected
++++ b/regress/regress_expected
+@@ -147,12 +147,17 @@
+ 142|SRID=5;MULTILINESTRING((2 2,3 3))
+ 143|SRID=6;MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)))
+ 143c1|MULTICURVE(CIRCULARSTRING(0 0,1 1,2 2))
++WARNING:  ST_Force_3dm signature was deprecated in 2.1.0. Please use ST_Force3DM
+ 144|POINTM(1 2 0)
++WARNING:  ST_Force_3dz signature was deprecated in 2.1.0. Please use ST_Force3DZ
+ 145|POINT(1 2 0)
++WARNING:  ST_Force_4d signature was deprecated in 2.1.0. Please use ST_Force4D
+ 146|POINT(1 2 0 3)
++WARNING:  ST_Force_4d signature was deprecated in 2.1.0. Please use ST_Force4D
+ 147|POINT(1 2 3 0)
+ 148|LINESTRING(0 0,5 0,10 0)
+ 149|GEOMETRYCOLLECTION EMPTY
++WARNING:  ST_Force_Collection signature was deprecated in 2.1.0. Please use ST_ForceCollection
+ 150|SRID=6;GEOMETRYCOLLECTION(POLYGON((0 0,1 0,1 1,0 1,0 0)))
+ 151|01030000000100000005000000000000000000000000000000000000000000000000000000000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000000000000000000000000000000000000000
+ 152|4326

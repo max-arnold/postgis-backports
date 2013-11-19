@@ -1,9 +1,13 @@
+upstream-r11979
+upstream-r11983
+upstream-r11990
+minor-r11979-correction
 debian-versions
 java-version-fix
 fixmakedoc
 fix-spelling
 link-liblwgeom
 use-debian-maven
-fix-manpages
 honor-build-flags
-fix-test-case-for-i386
+fix-kfreebsd
+fix-manpage

@@ -1,0 +1,16 @@
+--- a/loader/Makefile.in
++++ b/loader/Makefile.in
+@@ -111,6 +111,13 @@
+ 	  $(CC) $(CFLAGS) $(GTK_WIN32_FLAGS) $^ -o $@ \
+ 	  $(GTK_LIBS) $(LDFLAGS) $(ICONV_LDFLAGS) $(PGSQL_FE_LDFLAGS) $(GETTEXT_LDFLAGS)
+ 
++man-install: shp2pgsql-gui.1
++	mkdir -p $(DESTDIR)$(PGSQL_MANDIR)/man1
++	$(INSTALL_DATA) shp2pgsql-gui.1 $(DESTDIR)$(PGSQL_MANDIR)/man1/shp2pgsql-gui.1
++
++man-uninstall:
++	rm -f $(DESTDIR)$(PGSQL_MANDIR)/man1/shp2pgsql-gui.1
++
+ installdir:
+ 	@mkdir -p $(DESTDIR)$(bindir)
+ 

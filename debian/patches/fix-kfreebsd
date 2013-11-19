@@ -1,0 +1,15 @@
+Description: Treat Debian kFreeBSD the same as FreeBSD (and Linux)
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2013-07-27
+
+--- a/raster/rt_core/rt_api.h
++++ b/raster/rt_core/rt_api.h
+@@ -42,7 +42,7 @@
+ #endif
+ 
+ 
+-#if defined(__FreeBSD__) || defined(__OpenBSD__)    /* seems to work like Linux... */
++#if defined(__FreeBSD_kernel__) || defined(__OpenBSD__)    /* seems to work like Linux... */
+ #if !defined(LINUX)
+ #define LINUX
+ #endif

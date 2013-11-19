@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# Should first check for installed extensions.
+db_input critical postgis/pg_@PGVERSION@_postgis_2.0_deprecated || true
+db_go

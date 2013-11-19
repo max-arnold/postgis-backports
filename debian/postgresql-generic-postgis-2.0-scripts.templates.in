@@ -1,0 +1,18 @@
+Template: postgis/pg_@PGVERSION@_postgis_2.0_deprecated
+Type: note
+Description: PostGIS 2.0 has been deprecated - please migrate your databases
+ The package postgresql-@PGVERSION@-postgis-2.0-scripts is installed on this
+ system, which means you likely use the PostGIS extension in some
+ databases.
+ .
+ Debian is now shipping PostGIS version 2.1 and dropped support for
+ 2.0, meaning bug or security fixes will no longer be provided for the
+ older one. Thus it is strongly recommended to migrate all databases
+ to PostGIS 2.1 as soon as possible.
+ .
+ Of course, databases that are already using PostGIS 2.0 will continue
+ to work. Note, however, that with this upgrade it's no longer
+ possible to create version 2.0 of the extension PostGIS. Instead,
+ 'CREATE EXTENSION postgis;' will now give you version 2.1. Note that
+ this also affects backups.
+

@@ -19,26 +19,36 @@ DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
 CHECK = check
-ifneq (,$(findstring nocheck,$(DEB_BUILLD_OPTIONS)))
+ifneq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	CHECK =
 endif
+
+# PostgreSQL versions supported by PostGIS 2.0 - for automatic
+# generation of transitional -scripts packages.
+POSTGIS_2_0_PGVERS = 8.4 9.0 9.1 9.2
 
 # Magic to automatically create a debian/control file for the (or all)
 # supported versions of Postgres.
 #
-# Blatantly copied from /usr/share/postgresql-common/pgxs_debian_control.mk
-# and extended to support NEWEST_VERSION.
-debian/control: debian/control.in debian/pgversions
+# Blatantly copied from
+# /usr/share/postgresql-common/pgxs_debian_control.mk and extended to
+# support NEWEST_VERSION and fiddle with postgis 2.0 transitional
+# packages.
+debian/control: debian/control.in debian/pgversions \
+			debian/control.postgis-2.0.in
 	(set -e; \
 	VERSIONS=`pg_buildext supported-versions $(CURDIR)` || exit $$?; \
 	NEWEST_VERSION=`pg_buildext supported-versions $(CURDIR) | tail -1` || exit $$?; \
+	POSTGIS_2_0_PGVERS="$(POSTGIS_2_0_PGVERS)" ; \
 	grep-dctrl -vP PGVERSION $< | \
 		sed -e "s:NEWEST_PGVERSION:$$NEWEST_VERSION:" > $@.pgxs_tmp; \
-	for v in $$VERSIONS; \
-        do                                         \
-		grep -q "^$$v" debian/pgversions   \
-		&& grep-dctrl -P PGVERSION $<      \
-		| sed -e "s:PGVERSION:$$v:" >> $@.pgxs_tmp; \
+	for v in $$VERSIONS; do \
+		grep-dctrl -P PGVERSION $<      \
+			| sed -e "s:PGVERSION:$$v:" >> $@.pgxs_tmp; \
+		if test "$${POSTGIS_2_0_PGVERS#*$$v}" != "$${POSTGIS_2_0_PGVERS}" ; then \
+			grep-dctrl -P PGVERSION debian/control.postgis-2.0.in \
+			| sed -e "s:PGVERSION:$$v:" >> $@.pgxs_tmp; \
+		fi; \
 	done; \
 	mv $@.pgxs_tmp $@) || (rm -f $@.pgxs_tmp; exit 1)
 
@@ -46,6 +56,23 @@ debian/control: debian/control.in debian/pgversions
 # from having to guess our platform (since we know it already)
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_BUILD_ARCH      ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+# Determine JAVA_HOME to use. Depends on which Build-Depends-Indep
+# variant has been used.
+JAVA_HOME = /usr/lib/jvm/java-8-openjdk-$(DEB_BUILD_ARCH)
+ifeq ("$(wildcard $(JAVA_HOME))","")
+  JAVA_HOME = /usr/lib/jvm/java-7-openjdk-$(DEB_BUILD_ARCH)
+  ifeq ("$(wildcard $(JAVA_HOME))","")
+    JAVA_HOME = /usr/lib/jvm/java-6-openjdk-$(DEB_BUILD_ARCH)
+    ifeq ("$(wildcard $(JAVA_HOME))","")
+      JAVA_HOME =
+    endif
+  endif
+endif
+
+# Use maven in offline mode and with the local Debian repo
+MVN = JAVA_HOME=$(JAVA_HOME) mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
 
 MAJOR_VERSION = $(shell grep POSTGIS_MAJOR_VERSION Version.config|cut -d= -f2)
 MINOR_VERSION = $(shell grep POSTGIS_MINOR_VERSION Version.config|cut -d= -f2)
@@ -77,7 +104,7 @@ COMMON_CONFIGURE_ARGS = --host=$(DEB_HOST_GNU_TYPE) \
 
 build: build-arch build-indep
 
-build-arch: build-arch-stamp
+build-arch: build-arch-stamp check
 build-arch-stamp: configuration-stamp
 #	Build against the newest Postgres version
 	$(MAKE)
@@ -89,26 +116,25 @@ build-arch-stamp: configuration-stamp
 		$(MAKE) -C $(CURDIR)/debian/build-$$PGVER; \
 	done)
 
-#   Run unit tests (against the newest Postgres version only, for
-#   now).
-	echo "LD_PRELOAD = '$(CURDIR)/liblwgeom/.libs/liblwgeom-2.0.3.so'" \
-		> $(CURDIR)/postgis-check-env.tmp
-	test -z '$(CHECK)' || \
-		pg_virtualenv -v $(NEWEST_POSTGRES_VERSION) \
-			-c '--environment $(CURDIR)/postgis-check-env.tmp' make check
-
 	touch $@
 
 build-indep: build-indep-stamp
 build-indep-stamp: configuration-stamp
+#	Re-check JAVA_HOME
+	@[ -n "$(JAVA_HOME)" ] || (echo "ERROR: didn't find a Java JDK"; exit 2)
+	@[ -x "$(JAVA_HOME)/bin/javac" ] || (echo "ERROR: no javac in JAVA_HOME=$(JAVA_HOME)"; exit 2)
+
+#	PostGIS JDBC (with debug support)
+	cd $(CURDIR)/java/jdbc && $(MVN) package
+
 #	Let PostGIS create a perl script from postgis_restore.pl.in
 	$(MAKE) -C utils
 
 #	Create a few SQL scripts that the Makefiles are not clever enough
 #	to resolve, when building arch-indep only.
-	$(MAKE) -C postgis postgis.sql postgis_upgrade_20_minor.sql
-	$(MAKE) -C raster/rt_pg rtpostgis.sql rtpostgis_upgrade_20_minor.sql
-	$(MAKE) -C topology topology.sql topology_upgrade_20_minor.sql
+	$(MAKE) -C postgis postgis.sql postgis_upgrade_21_minor.sql
+	$(MAKE) -C raster/rt_pg rtpostgis.sql rtpostgis_upgrade_21_minor.sql
+	$(MAKE) -C topology topology.sql topology_upgrade_21_minor.sql
 
 #	This creates the required SQL scripts. Again, the Makefile is not
 #	clever enough to run this before 'install'.
@@ -161,12 +187,22 @@ clean: debian/control
 	[ ! -f GNUmakefile ] || $(MAKE) distclean || true
 	[ ! -f GNUmakefile ] || $(MAKE) -C doc images-clean || true
 
+#	We used to invoke 'mvn clean', but plain 'rm' is a lot quicker and
+#	simpler, as it doesn't require all of the Java stuff in B-D, but
+#	having it in Build-Depneds-Indep is enough.
+	rm -rf $(CURDIR)/java/jdbc/target
+
 #	Cleanup after the Makefile
-	rm -f $(CURDIR)/debian/*.postinst $(CURDIR)/debian/*.postrm
-	rm -f postgis/postgis_upgrade_20_minor.sql.in raster/rt_pg/rtpostgis_drop.sql \
+	rm -f postgis/postgis_upgrade_20_minor.sql.in \
+		raster/rt_pg/rtpostgis_drop.sql \
 		raster/rt_pg/rtpostgis_upgrade_cleanup.sql
-	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0.install
-	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0-scripts.install
+
+#	Cleanup auto-generated packaging control files
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.1.install
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-scripts.install
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0-scripts.templates
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0-scripts.postinst
+	rm -f $(CURDIR)/debian/postgresql-*-postgis-2.0-scripts.config
 	rm -f loader/cunit/cu_tester
 	rm -rf liblwgeom/cunit/.libs
 
@@ -182,8 +218,9 @@ install-indep: build-indep
 	dh_prep -i 
 	dh_installdirs -i
 
-#	Install extensions for the most recent Postgres version
+#	Install extensions and utils for the most recent Postgres version
 	$(MAKE) -C extensions install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) -C utils install DESTDIR=$(CURDIR)/debian/tmp
 
 #	Install extensions for the older Postgres versions
 	(set -e; \
@@ -200,6 +237,11 @@ install-indep: build-indep
 			PGSQL_DOCDIR=/usr/share/doc
 
 	dh_install -i
+
+#	Link the resulting JAR file, so it's available via it's old
+#	name. (Even if postgis-jdbc.jar might be more appropriate.)
+	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
+		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
 
 install-arch: build-arch
 	dh_testdir
@@ -223,26 +265,50 @@ install-arch: build-arch
 			PGSQL_DOCDIR=/usr/share/doc \
 			PGSQL_MANDIR=/usr/share/man
 
-#	Auto-create required .install file for the current Postgres version.
+#	Auto-create required .install file for each Postgres major version
 	(set -e; \
 	for PGVER in $(OTHER_POSTGRES_VERSIONS) $(NEWEST_POSTGRES_VERSION); do \
-		cat $(CURDIR)/debian/postgresql-generic-postgis-2.0.install.in \
+		cat $(CURDIR)/debian/postgresql-generic-postgis-2.1.install.in \
 			| sed -e "s/@PGVERSION@/$$PGVER/" \
-			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.0.install; \
-		cat $(CURDIR)/debian/postgresql-generic-postgis-2.0-scripts.install.in \
+			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.1.install; \
+		cat $(CURDIR)/debian/postgresql-generic-postgis-scripts.install.in \
 			| sed -e "s/@PGVERSION@/$$PGVER/" \
-			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.0-scripts.install; \
+			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-scripts.install; \
+		cat $(CURDIR)/debian/postgresql-generic-postgis-2.0-scripts.postinst.in \
+			| sed -e "s/@PGVERSION@/$$PGVER/" \
+			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.0-scripts.postinst; \
+		cat $(CURDIR)/debian/postgresql-generic-postgis-2.0-scripts.templates.in \
+			| sed -e "s/@PGVERSION@/$$PGVER/" \
+			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.0-scripts.templates; \
+		cat $(CURDIR)/debian/postgresql-generic-postgis-2.0-scripts.config.in \
+			| sed -e "s/@PGVERSION@/$$PGVER/" \
+			> $(CURDIR)/debian/postgresql-$$PGVER-postgis-2.0-scripts.config; \
 	done)
+
+#	Copy binaries from the NEWEST_POSTGRES_VERSION build to the
+#	'postgis' binary package.
+	mkdir -p $(CURDIR)/debian/postgis/usr/bin
+	cp -r $(CURDIR)/debian/tmp/usr/lib/postgresql/$(NEWEST_POSTGRES_VERSION)/bin/* \
+		$(CURDIR)/debian/postgis/usr/bin/
 
 	dh_install -s
 
-check: build-arch
+check: build-arch-stamp
 #   Run unit tests (against the newest Postgres version only, for
 #   now).
-	echo "LD_PRELOAD = '$(CURDIR)/liblwgeom/.libs/liblwgeom-2.0.3.so'" \
+	echo "LD_PRELOAD = '$(CURDIR)/liblwgeom/.libs/liblwgeom-2.1.0.so'" \
 		> $(CURDIR)/postgis-check-env.tmp
-	pg_virtualenv -v $(NEWEST_POSTGRES_VERSION) \
-		-c '--environment $(CURDIR)/postgis-check-env.tmp' make check
+	(set -e; \
+		test -z '$(CHECK)' || \
+		pg_virtualenv -v $(NEWEST_POSTGRES_VERSION) \
+			-c '--environment $(CURDIR)/postgis-check-env.tmp' make check || (\
+		for LOGFILE in /tmp/pgis_reg/test_*_diff; do \
+			echo " ### $$LOGFILE ###"; \
+			cat $$LOGFILE; \
+		done; \
+		echo " ### end of log dumps ###"; \
+		exit 2) \
+	)
 
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
@@ -251,6 +317,7 @@ binary-common:
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
+	dh_installdebconf
 	dh_installdocs
 	dh_installexamples
 	dh_installman
