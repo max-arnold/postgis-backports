@@ -19,6 +19,7 @@ POSTGIS_PGSQL_VERSION=@POSTGIS_PGSQL_VERSION@
 POSTGIS_GEOS_VERSION=@POSTGIS_GEOS_VERSION@
 POSTGIS_PROJ_VERSION=@POSTGIS_PROJ_VERSION@
 HAVE_JSON=@HAVE_JSON@
+HAVE_SFCGAL=@HAVE_SFCGAL@
 MINGWBUILD=@MINGWBUILD@
 
 # MingW hack: rather than use PGSQL_BINDIR directly, we change
@@ -69,6 +70,7 @@ TESTS = \
 	regress \
 	regress_index \
 	regress_index_nulls \
+	regress_selectivity \
 	lwgeom_regress \
 	regress_lrs \
 	removepoint \
@@ -92,8 +94,10 @@ TESTS = \
 	polyhedralsurface \
 	polygonize \
 	postgis_type_name \
+	geography \
 	out_geometry \
 	out_geography \
+	in_geohash \
 	in_gml \
 	in_kml \
 	iscollection \
@@ -105,6 +109,7 @@ TESTS = \
 	regress_management \
 	dump \
 	dumppoints \
+	boundary \
 	wmsservers \
 	wkt \
 	wkb \
@@ -140,12 +145,38 @@ ifeq ($(shell expr $(POSTGIS_GEOS_VERSION) ">=" 33),1)
 		relate_bnr
 endif
 
+ifeq ($(shell expr $(POSTGIS_GEOS_VERSION) ">=" 34),1)
+	# GEOS-3.4 adds:
+	# ST_DelaunayTriangles
+	TESTS += \
+		delaunaytriangles
+endif
+
 ifeq ($(HAVE_JSON),yes)
 	# JSON-C adds:
 	# ST_GeomFromGeoJSON()
 	TESTS += \
 		in_geojson 
 endif
+
+ifeq ($(HAVE_SFCGAL),yes)
+	# SFCGAL additionnal backend
+	TESTS += \
+		regress_sfcgal \
+		sfcgal/empty.sql \
+		sfcgal/geography.sql \
+		sfcgal/legacy.sql \
+		sfcgal/measures.sql \
+		sfcgal/regress_ogc_prep.sql \
+		sfcgal/regress_ogc.sql \
+		sfcgal/regress.sql \
+		sfcgal/tickets.sql \
+		sfcgal/concave_hull.sql \
+		sfcgal/wmsservers.sql
+
+	RUNTESTFLAGS = --sfcgal
+endif
+
 
 all install uninstall:
 
@@ -169,8 +200,8 @@ staged-install: staged-install-raster staged-install-topology
 	#$(MAKE) -C ../loader REGRESS=1 DESTDIR=$(REGRESS_INSTALLDIR) install
 
 test check: staged-install
-	./run_test $(RUNTESTFLAGS) $(TESTS) && \
-	./run_test --upgrade $(RUNTESTFLAGS) $(TESTS)
+	$(PERL) run_test.pl $(RUNTESTFLAGS) $(TESTS) && \
+	$(PERL) run_test.pl --upgrade $(RUNTESTFLAGS) $(TESTS)
 
 garden:
 	createdb postgis_garden

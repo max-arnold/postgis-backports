@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: stringbuffer.h 9324 2012-02-27 22:08:12Z pramsey $
+ * $Id: stringbuffer.h 9916 2012-06-15 22:51:57Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * Copyright 2002 Thamer Alharbash
@@ -36,6 +36,8 @@
  *
  **********************************************************************/
 
+#ifndef _STRINGBUFFER_H
+#define _STRINGBUFFER_H 1
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -67,3 +69,4 @@ extern char stringbuffer_lastchar(stringbuffer_t *s);
 extern int stringbuffer_trim_trailing_white(stringbuffer_t *s);
 extern int stringbuffer_trim_trailing_zeroes(stringbuffer_t *s);
 
+#endif /* _STRINGBUFFER_H */

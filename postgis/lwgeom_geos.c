@@ -25,19 +25,11 @@
 
 #include "../postgis_config.h"
 #include "lwgeom_functions_analytic.h" /* for point_in_polygon */
-#include "lwgeom_cache.h"
 #include "lwgeom_geos.h"
 #include "liblwgeom_internal.h"
 #include "lwgeom_rtree.h"
-
-/*
-** GEOS prepared geometry is only available from GEOS 3.1 onwards
-*/
-#define PREPARED_GEOM
-
-#ifdef PREPARED_GEOM
 #include "lwgeom_geos_prepared.h" 
-#endif
+
 
 #include <string.h>
 #include <assert.h>
@@ -49,7 +41,7 @@ Datum relate_full(PG_FUNCTION_ARGS);
 Datum relate_pattern(PG_FUNCTION_ARGS);
 Datum disjoint(PG_FUNCTION_ARGS);
 Datum touches(PG_FUNCTION_ARGS);
-Datum intersects(PG_FUNCTION_ARGS);
+Datum geos_intersects(PG_FUNCTION_ARGS);
 Datum crosses(PG_FUNCTION_ARGS);
 Datum contains(PG_FUNCTION_ARGS);
 Datum containsproperly(PG_FUNCTION_ARGS);
@@ -59,7 +51,7 @@ Datum isvalid(PG_FUNCTION_ARGS);
 Datum isvalidreason(PG_FUNCTION_ARGS);
 Datum isvaliddetail(PG_FUNCTION_ARGS);
 Datum buffer(PG_FUNCTION_ARGS);
-Datum intersection(PG_FUNCTION_ARGS);
+Datum geos_intersection(PG_FUNCTION_ARGS);
 Datum convexhull(PG_FUNCTION_ARGS);
 Datum topologypreservesimplify(PG_FUNCTION_ARGS);
 Datum difference(PG_FUNCTION_ARGS);
@@ -80,32 +72,13 @@ Datum hausdorffdistancedensify(PG_FUNCTION_ARGS);
 Datum ST_UnaryUnion(PG_FUNCTION_ARGS);
 Datum ST_Equals(PG_FUNCTION_ARGS);
 Datum ST_BuildArea(PG_FUNCTION_ARGS);
+Datum ST_DelaunayTriangles(PG_FUNCTION_ARGS);
 
 Datum pgis_union_geometry_array(PG_FUNCTION_ARGS);
 
 /*
 ** Prototypes end
 */
-
-static RTREE_POLY_CACHE *
-GetRtreeCache(FunctionCallInfoData *fcinfo, LWGEOM *lwgeom, GSERIALIZED *poly)
-{
-	MemoryContext old_context;
-	GeomCache* supercache = GetGeomCache(fcinfo);
-	RTREE_POLY_CACHE *poly_cache = supercache->rtree;
-
-	/*
-	 * Switch the context to the function-scope context,
-	 * retrieve the appropriate cache object, cache it for
-	 * future use, then switch back to the local context.
-	 */
-	old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-	poly_cache = retrieveCache(lwgeom, poly, poly_cache);
-	supercache->rtree = poly_cache;
-	MemoryContextSwitchTo(old_context);
-
-	return poly_cache;
-}
 
 
 PG_FUNCTION_INFO_V1(postgis_geos_version);
@@ -919,6 +892,7 @@ Datum boundary(PG_FUNCTION_ARGS)
 	GSERIALIZED	*geom1;
 	GEOSGeometry *g1, *g3;
 	GSERIALIZED *result;
+	LWGEOM *lwgeom;
 	int srid;
 
 
@@ -930,9 +904,24 @@ Datum boundary(PG_FUNCTION_ARGS)
 
 	srid = gserialized_get_srid(geom1);
 
+	lwgeom = lwgeom_from_gserialized(geom1);
+	if ( ! lwgeom ) {
+		lwerror("POSTGIS2GEOS: unable to deserialize input");
+		PG_RETURN_NULL();
+	}
+
+	/* GEOS doesn't do triangle type, so we special case that here */
+	if (lwgeom->type == TRIANGLETYPE) {
+		lwgeom->type = LINETYPE;
+		result = geometry_serialize(lwgeom);
+		lwgeom_free(lwgeom);
+		PG_RETURN_POINTER(result);
+	}
+
 	initGEOS(lwnotice, lwgeom_geos_error);
 
-	g1 = (GEOSGeometry *)POSTGIS2GEOS(geom1 );
+	g1 = LWGEOM2GEOS(lwgeom);
+	lwgeom_free(lwgeom);
 
 	if ( 0 == g1 )   /* exception thrown at construction */
 	{
@@ -1455,8 +1444,8 @@ Datum ST_OffsetCurve(PG_FUNCTION_ARGS)
 }
 
 
-PG_FUNCTION_INFO_V1(intersection);
-Datum intersection(PG_FUNCTION_ARGS)
+PG_FUNCTION_INFO_V1(geos_intersection);
+Datum geos_intersection(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *geom1;
 	GSERIALIZED *geom2;
@@ -1521,7 +1510,6 @@ Datum difference(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(pointonsurface);
 Datum pointonsurface(PG_FUNCTION_ARGS)
 {
-	LWGEOM *lwg;
 	GSERIALIZED *geom;
 	GEOSGeometry *g1, *g3;
 	GSERIALIZED *result;
@@ -1531,9 +1519,12 @@ Datum pointonsurface(PG_FUNCTION_ARGS)
 	/* Empty.PointOnSurface == Point Empty */
 	if ( gserialized_is_empty(geom) )
 	{
-		lwg = lwpoint_construct_empty(gserialized_get_srid(geom), gserialized_has_z(geom), gserialized_has_m(geom));
-		result = geometry_serialize(lwpoint_as_lwgeom(lwg));
-		lwgeom_free(lwg);
+		LWPOINT *lwp = lwpoint_construct_empty(
+		                   gserialized_get_srid(geom),
+		                   gserialized_has_z(geom), 
+		                   gserialized_has_m(geom));
+		result = geometry_serialize(lwpoint_as_lwgeom(lwp));
+		lwpoint_free(lwp);
 		PG_RETURN_POINTER(result);
 	}
 
@@ -1581,18 +1572,20 @@ Datum pointonsurface(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(centroid);
 Datum centroid(PG_FUNCTION_ARGS)
 {
-	LWGEOM *lwg;
 	GSERIALIZED *geom, *result;
 	GEOSGeometry *geosgeom, *geosresult;
 
-	geom = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	geom = (GSERIALIZED *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 
 	/* Empty.Centroid() == Point Empty */
 	if ( gserialized_is_empty(geom) )
 	{
-		lwg = lwpoint_construct_empty(gserialized_get_srid(geom), gserialized_has_z(geom), gserialized_has_m(geom));
-		result = geometry_serialize(lwpoint_as_lwgeom(lwg));
-		lwgeom_free(lwg);
+		LWPOINT *lwp = lwpoint_construct_empty(
+		                    gserialized_get_srid(geom), 
+		                    gserialized_has_z(geom), 
+		                    gserialized_has_m(geom));
+		result = geometry_serialize(lwpoint_as_lwgeom(lwp));
+		lwpoint_free(lwp);
 		PG_RETURN_POINTER(result);
 	}
 
@@ -1789,23 +1782,19 @@ Datum isvalidreason(PG_FUNCTION_ARGS)
 	{
 		reason_str = GEOSisValidReason(g1);
 		GEOSGeom_destroy((GEOSGeometry *)g1);
+		if (reason_str == NULL)
+		{
+			elog(ERROR,"GEOSisValidReason() threw an error: %s", lwgeom_geos_errmsg);
+			PG_RETURN_NULL(); /* never get here */
+		}
+		result = cstring2text(reason_str);
+		GEOSFree(reason_str);
 	}
 	else
 	{
-		/* we don't use pstrdup here as we free later */
-		reason_str = strdup(lwgeom_geos_errmsg);
+		result = cstring2text(lwgeom_geos_errmsg);
 	}
 
-
-	if (reason_str == NULL)
-	{
-		elog(ERROR,"GEOS isvalidreason() threw an error!");
-		PG_RETURN_NULL(); /* never get here */
-	}
-	
-	result = cstring2text(reason_str);
-	/* No pfree because GEOS did a standard malloc on the reason_str */
-	free(reason_str);
 
 	PG_FREE_IF_COPY(geom, 0);
 	PG_RETURN_POINTER(result);
@@ -2001,9 +1990,7 @@ Datum contains(PG_FUNCTION_ARGS)
 	LWPOINT *point;
 	RTREE_POLY_CACHE *poly_cache;
 	bool result;
-#ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
-#endif
 
 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	geom2 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
@@ -2046,9 +2033,9 @@ Datum contains(PG_FUNCTION_ARGS)
 
 		POSTGIS_DEBUGF(3, "Precall point_in_multipolygon_rtree %p, %p", lwgeom, point);
 
-		poly_cache = GetRtreeCache(fcinfo, lwgeom, geom1);
+		poly_cache = GetRtreeCache(fcinfo, geom1);
 
-		if ( poly_cache->ringIndices )
+		if ( poly_cache && poly_cache->ringIndices )
 		{
 			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
 		}
@@ -2086,7 +2073,6 @@ Datum contains(PG_FUNCTION_ARGS)
 
 	initGEOS(lwnotice, lwgeom_geos_error);
 
-#ifdef PREPARED_GEOM
 	prep_cache = GetPrepGeomCache( fcinfo, geom1, 0 );
 
 	if ( prep_cache && prep_cache->prepared_geom && prep_cache->argnum == 1 )
@@ -2102,7 +2088,6 @@ Datum contains(PG_FUNCTION_ARGS)
 		GEOSGeom_destroy(g1);
 	}
 	else
-#endif
 	{
 		g1 = (GEOSGeometry *)POSTGIS2GEOS(geom1);
 		if ( 0 == g1 )   /* exception thrown at construction */
@@ -2143,9 +2128,7 @@ Datum containsproperly(PG_FUNCTION_ARGS)
 	GSERIALIZED *				geom2;
 	bool 					result;
 	GBOX 			box1, box2;
-#ifdef PREPARED_GEOM
 	PrepGeomCache *	prep_cache;
-#endif
 
 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	geom2 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
@@ -2172,7 +2155,6 @@ Datum containsproperly(PG_FUNCTION_ARGS)
 
 	initGEOS(lwnotice, lwgeom_geos_error);
 
-#ifdef PREPARED_GEOM
 	prep_cache = GetPrepGeomCache( fcinfo, geom1, 0 );
 
 	if ( prep_cache && prep_cache->prepared_geom && prep_cache->argnum == 1 )
@@ -2187,7 +2169,6 @@ Datum containsproperly(PG_FUNCTION_ARGS)
 		GEOSGeom_destroy(g);
 	}
 	else
-#endif
 	{
 		GEOSGeometry *g2;
 		GEOSGeometry *g1;
@@ -2237,9 +2218,7 @@ Datum covers(PG_FUNCTION_ARGS)
 	LWGEOM *lwgeom;
 	LWPOINT *point;
 	RTREE_POLY_CACHE *poly_cache;
-#ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
-#endif
 
 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	geom2 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
@@ -2260,7 +2239,7 @@ Datum covers(PG_FUNCTION_ARGS)
 	        gserialized_get_gbox_p(geom2, &box2) )
 	{
 		if (( box2.xmin < box1.xmin ) || ( box2.xmax > box1.xmax ) ||
-		        ( box2.ymin < box1.ymin ) || ( box2.ymax > box1.ymax ))
+		    ( box2.ymin < box1.ymin ) || ( box2.ymax > box1.ymax ))
 		{
 			PG_RETURN_BOOL(FALSE);
 		}
@@ -2280,9 +2259,9 @@ Datum covers(PG_FUNCTION_ARGS)
 
 		POSTGIS_DEBUGF(3, "Precall point_in_multipolygon_rtree %p, %p", lwgeom, point);
 
-		poly_cache = GetRtreeCache(fcinfo, lwgeom, geom1);
+		poly_cache = GetRtreeCache(fcinfo, geom1);
 
-		if ( poly_cache->ringIndices )
+		if ( poly_cache && poly_cache->ringIndices )
 		{
 			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
 		}
@@ -2321,7 +2300,6 @@ Datum covers(PG_FUNCTION_ARGS)
 
 	initGEOS(lwnotice, lwgeom_geos_error);
 
-#ifdef PREPARED_GEOM
 	prep_cache = GetPrepGeomCache( fcinfo, geom1, 0 );
 
 	if ( prep_cache && prep_cache->prepared_geom && prep_cache->argnum == 1 )
@@ -2336,7 +2314,6 @@ Datum covers(PG_FUNCTION_ARGS)
 		GEOSGeom_destroy(g1);
 	}
 	else
-#endif
 	{
 		GEOSGeometry *g1;
 		GEOSGeometry *g2;
@@ -2437,9 +2414,9 @@ Datum coveredby(PG_FUNCTION_ARGS)
 		point = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom1));
 		lwgeom = lwgeom_from_gserialized(geom2);
 
-		poly_cache = GetRtreeCache(fcinfo, lwgeom, geom2);
+		poly_cache = GetRtreeCache(fcinfo, geom2);
 
-		if ( poly_cache->ringIndices )
+		if ( poly_cache && poly_cache->ringIndices )
 		{
 			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
 		}
@@ -2578,8 +2555,8 @@ Datum crosses(PG_FUNCTION_ARGS)
 }
 
 
-PG_FUNCTION_INFO_V1(intersects);
-Datum intersects(PG_FUNCTION_ARGS)
+PG_FUNCTION_INFO_V1(geos_intersects);
+Datum geos_intersects(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *geom1;
 	GSERIALIZED *geom2;
@@ -2590,9 +2567,7 @@ Datum intersects(PG_FUNCTION_ARGS)
 	LWPOINT *point;
 	LWGEOM *lwgeom;
 	RTREE_POLY_CACHE *poly_cache;
-#ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
-#endif
 
 	geom1 = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	geom2 = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
@@ -2625,7 +2600,7 @@ Datum intersects(PG_FUNCTION_ARGS)
 	type1 = gserialized_get_type(geom1);
 	type2 = gserialized_get_type(geom2);
 	if ( (type1 == POINTTYPE && (type2 == POLYGONTYPE || type2 == MULTIPOLYGONTYPE)) ||
-	        (type2 == POINTTYPE && (type1 == POLYGONTYPE || type1 == MULTIPOLYGONTYPE)))
+	     (type2 == POINTTYPE && (type1 == POLYGONTYPE || type1 == MULTIPOLYGONTYPE)))
 	{
 		POSTGIS_DEBUG(3, "Point in Polygon test requested...short-circuiting.");
 
@@ -2644,9 +2619,9 @@ Datum intersects(PG_FUNCTION_ARGS)
 			polytype = type1;
 		}
 
-		poly_cache = GetRtreeCache(fcinfo, lwgeom, serialized_poly);
+		poly_cache = GetRtreeCache(fcinfo, serialized_poly);
 
-		if ( poly_cache->ringIndices )
+		if ( poly_cache && poly_cache->ringIndices )
 		{
 			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
 		}
@@ -2680,7 +2655,6 @@ Datum intersects(PG_FUNCTION_ARGS)
 	}
 
 	initGEOS(lwnotice, lwgeom_geos_error);
-#ifdef PREPARED_GEOM
 	prep_cache = GetPrepGeomCache( fcinfo, geom1, geom2 );
 
 	if ( prep_cache && prep_cache->prepared_geom )
@@ -2709,7 +2683,6 @@ Datum intersects(PG_FUNCTION_ARGS)
 		}
 	}
 	else
-#endif
 	{
 		GEOSGeometry *g1;
 		GEOSGeometry *g2;
@@ -3420,6 +3393,39 @@ Datum ST_BuildArea(PG_FUNCTION_ARGS)
 	lwgeom_in = lwgeom_from_gserialized(geom);
 
 	lwgeom_out = lwgeom_buildarea(lwgeom_in);
+	lwgeom_free(lwgeom_in) ;
+	
+	if ( ! lwgeom_out ) {
+		PG_FREE_IF_COPY(geom, 0);
+		PG_RETURN_NULL();
+	}
+
+	result = geometry_serialize(lwgeom_out) ;
+	lwgeom_free(lwgeom_out) ;
+
+	PG_FREE_IF_COPY(geom, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*
+ * Take the vertices of a geometry and builds
+ * Delaunay triangles around them.
+ */
+PG_FUNCTION_INFO_V1(ST_DelaunayTriangles);
+Datum ST_DelaunayTriangles(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *result;
+	GSERIALIZED *geom;
+	LWGEOM *lwgeom_in, *lwgeom_out;
+	double	tolerance = 0.0;
+	int flags = 0;
+
+	geom = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	tolerance = PG_GETARG_FLOAT8(1);
+	flags = PG_GETARG_INT32(2);
+
+	lwgeom_in = lwgeom_from_gserialized(geom);
+	lwgeom_out = lwgeom_delaunay_triangulation(lwgeom_in, tolerance, flags);
 	lwgeom_free(lwgeom_in) ;
 	
 	if ( ! lwgeom_out ) {

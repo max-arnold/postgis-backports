@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_geos_prepared.h 9324 2012-02-27 22:08:12Z pramsey $
+ * $Id: lwgeom_geos_prepared.h 9929 2012-06-18 17:44:33Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -25,28 +25,33 @@
 #include "lwgeom_geos.h"
 
 /*
-** Cache structure. We use GSERIALIZED as keys so no transformations
-** are needed before we memcmp them with other keys. We store the
-** size to avoid having to calculate the size every time.
-** The argnum gives the number of function arguments we are caching.
-** Intersects requires that both arguments be checked for cacheability,
-** while Contains only requires that the containing argument be checked.
-** Both the Geometry and the PreparedGeometry have to be cached,
-** because the PreparedGeometry contains a reference to the geometry.
+* Cache structure. We use GSERIALIZED as keys so no transformations
+* are needed before we memcmp them with other keys. We store the
+* size to avoid having to calculate the size every time.
+* The argnum gives the number of function arguments we are caching.
+* Intersects requires that both arguments be checked for cacheability,
+* while Contains only requires that the containing argument be checked.
+* Both the Geometry and the PreparedGeometry have to be cached,
+* because the PreparedGeometry contains a reference to the geometry.
+* 
+* Note that the first 6 entries are part of the common GeomCache
+* structure and have to remain in order to allow the overall caching
+* system to share code (the cache checking code is common between
+* prepared geometry, circtrees, recttrees, and rtrees).
 */
-typedef struct
-{
-	char                          type;
-	GSERIALIZED                     *pg_geom1;
-	GSERIALIZED                     *pg_geom2;
-	size_t                        pg_geom1_size;
-	size_t                        pg_geom2_size;
-	int32                         argnum;
-	const GEOSPreparedGeometry    *prepared_geom;
-	const GEOSGeometry                  *geom;
-	MemoryContext                 context;
-}
-PrepGeomCache;
+typedef struct {
+	int                         type;       // <GeomCache>
+	GSERIALIZED*                geom1;      // 
+	GSERIALIZED*                geom2;      // 
+	size_t                      geom1_size; // 
+	size_t                      geom2_size; // 
+	int32                       argnum;     // </GeomCache>
+	MemoryContext               context_statement;
+	MemoryContext               context_callback;
+	const GEOSPreparedGeometry* prepared_geom;
+	const GEOSGeometry*         geom;
+} PrepGeomCache;
+
 
 /*
 ** Get the current cache, given the input geometries.
@@ -58,4 +63,4 @@ PrepGeomCache;
 */
 PrepGeomCache *GetPrepGeomCache(FunctionCallInfoData *fcinfo, GSERIALIZED *pg_geom1, GSERIALIZED *pg_geom2);
 
-#endif /* LWGEOM_GEOS_PREPARED_H_ 1 */
+#endif /* LWGEOM_GEOS_PREPARED_H_ */

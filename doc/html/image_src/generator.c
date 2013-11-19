@@ -49,16 +49,6 @@ char *imageSize = "200x200";
 int getStyleName(char **styleName, char* line);
 
 /**
- * Set up liblwgeom to run in stand-alone mode using the
- * usual system memory handling functions.
- */
-void lwgeom_init_allocators(void)
-{
-	/* liblwgeom callback - install default handlers */
-	lwgeom_install_default_allocators();
-}
-
-/**
  * Writes the coordinates of a POINTARRAY to a char* where ordinates are
  * separated by a comma and coordinates by a space so that the coordinate
  * pairs can be interpreted by ImageMagick's SVG draw command.
@@ -237,7 +227,7 @@ addDropShadow(int layerNumber)
 	char str[512];
 	sprintf(
 	    str,
-	    "convert tmp%d.png -gravity center \\( +clone -background navy -shadow 100x3+4+4 \\) +swap -background none -flatten tmp%d.png",
+	    "convert tmp%d.png -gravity center \"(\" +clone -background navy -shadow 100x3+4+4 \")\" +swap -background none -flatten tmp%d.png",
 	    layerNumber, layerNumber);
 	LWDEBUGF(4, "%s", str);
 	system(str);
@@ -256,7 +246,7 @@ addHighlight(int layerNumber)
 	char str[512];
 	sprintf(
 	    str,
-	    "convert tmp%d.png \\( +clone -channel A -separate +channel -negate -background black -virtual-pixel background -blur 0x3 -shade 120x55 -contrast-stretch 0%% +sigmoidal-contrast 7x50%% -fill grey50 -colorize 10%% +clone +swap -compose overlay -composite \\) -compose In -composite tmp%d.png",
+	    "convert tmp%d.png \"(\" +clone -channel A -separate +channel -negate -background black -virtual-pixel background -blur 0x3 -shade 120x55 -contrast-stretch 0%% +sigmoidal-contrast 7x50%% -fill grey50 -colorize 10%% +clone +swap -compose overlay -composite \")\" -compose In -composite tmp%d.png",
 	    layerNumber, layerNumber);
 	LWDEBUGF(4, "%s", str);
 	system(str);
@@ -298,6 +288,10 @@ flattenLayers(char* filename)
 	remove("tmp3.png");
 	remove("tmp4.png");
 	remove("tmp5.png");
+	remove("tmp6.png");
+	remove("tmp7.png");
+	remove("tmp8.png");
+	remove("tmp9.png");
 	free(str);
 }
 

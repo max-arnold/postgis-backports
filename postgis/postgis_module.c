@@ -14,15 +14,31 @@
 #include "fmgr.h"
 #include "utils/elog.h"
 #include "utils/guc.h"
+#include "libpq/pqsignal.h"
 
 #include "../postgis_config.h"
+
 #include "lwgeom_log.h"
 #include "lwgeom_pg.h"
+#include "geos_c.h"
+#include "lwgeom_backend_api.h"
 
 /*
  * This is required for builds against pgsql
  */
 PG_MODULE_MAGIC;
+
+static pqsigfunc coreIntHandler = 0;
+static void handleInterrupt(int sig);
+
+#ifdef WIN32
+#if POSTGIS_GEOS_VERSION >= 34 
+static void geosInterruptCallback() {
+  if (UNBLOCKED_SIGNAL_QUEUE()) 
+    pgwin32_dispatch_queued_signals(); 
+}
+#endif
+#endif
 
 /*
  * Module load callback
@@ -31,6 +47,15 @@ void _PG_init(void);
 void
 _PG_init(void)
 {
+
+  coreIntHandler = pqsignal(SIGINT, handleInterrupt); 
+
+#ifdef WIN32
+#if POSTGIS_GEOS_VERSION >= 34 
+  GEOS_interruptRegisterCallback(geosInterruptCallback);
+#endif
+#endif
+
 #if 0
   /* Define custom GUC variables. */
   DefineCustomIntVariable(
@@ -68,6 +93,11 @@ _PG_init(void)
    );
 #endif
 
+    /* install PostgreSQL handlers */
+    pg_install_lwgeom_handlers();
+
+    /* initialize geometry backend */
+    lwgeom_init_backend();
 }
 
 /*
@@ -81,4 +111,18 @@ _PG_fini(void)
 }
 
 
+static void
+handleInterrupt(int sig)
+{
+  printf("Interrupt requested\n"); fflush(stdout);
 
+#if POSTGIS_GEOS_VERSION >= 34 
+  GEOS_interruptRequest();
+#endif
+
+  /* TODO: request interruption of liblwgeom as well ? */
+
+  if ( coreIntHandler ) {
+    (*coreIntHandler)(sig);
+  }
+}

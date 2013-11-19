@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"  xmlns:pgis="http://www.postgis.org/pgis">
 <!-- ********************************************************************
- * $Id: postgis_gardentest_subset.sql.xsl 6790 2011-02-09 12:54:23Z robe $
+ * $Id: postgis_gardentest_subset.sql.xsl 11350 2013-05-04 13:54:22Z robe $
  ********************************************************************
 	 Copyright 2009, Regina Obe
 	 License: BSD
@@ -10,7 +10,7 @@
 			test more geometries but only against one function.  Useful for intro of new functions or comparing major changes from function of one version of PostGIS to the other
 	 ******************************************************************** -->
 	<xsl:output method="text" />
-	<xsl:variable name='testversion'>1.5.0</xsl:variable>
+	<xsl:variable name='testversion'>2.1.0</xsl:variable>
 	<xsl:variable name="fninclude"><xsl:value-of select="$inputfninclude"/></xsl:variable>
 	<xsl:variable name='var_srid'>3395</xsl:variable>
 	<xsl:variable name='var_position'>1</xsl:variable>

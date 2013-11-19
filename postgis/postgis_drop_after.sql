@@ -1,6 +1,6 @@
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 --
--- $Id: postgis_drop_after.sql 9360 2012-03-01 08:54:38Z strk $
+-- $Id: postgis_drop_after.sql 11289 2013-04-12 18:46:39Z pramsey $
 --
 -- PostGIS - Spatial Types for PostgreSQL
 -- http://postgis.refractions.net
@@ -134,6 +134,11 @@ DROP FUNCTION IF EXISTS st_geometry_ge(geometry, geometry);
 DROP FUNCTION IF EXISTS st_geometry_eq(geometry, geometry);
 DROP FUNCTION IF EXISTS st_geometry_cmp(geometry, geometry);
 DROP FUNCTION IF EXISTS SnapToGrid(geometry, float8, float8);
+
+DROP FUNCTION IF EXISTS geometry_gist_sel_2d (internal, oid, internal, int4);
+DROP FUNCTION IF EXISTS geometry_gist_joinsel_2d(internal, oid, internal, smallint);
+DROP FUNCTION IF EXISTS geography_gist_selectivity (internal, oid, internal, int4);
+DROP FUNCTION IF EXISTS geography_gist_join_selectivity(internal, oid, internal, smallint);
 
 DROP FUNCTION IF EXISTS ST_AsBinary(text); -- deprecated in 2.0
 DROP FUNCTION IF EXISTS postgis_uses_stats(); -- deprecated in 2.0

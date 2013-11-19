@@ -13,8 +13,8 @@
 CC=gcc
 CFLAGS=-g -O2  -Wall -Wmissing-prototypes 
 
-CUNIT_LDFLAGS= -lcunit
-CUNIT_CPPFLAGS= -I../../../liblwgeom
+CUNIT_LDFLAGS=-L/var/lib/jenkins/workspace/pg/rel/pg9.2w64/lib -L/var/lib/jenkins/workspace/gdal/rel-2.0w64/lib -lcunit
+CUNIT_CPPFLAGS=-I/var/lib/jenkins/workspace/pg/rel/pg9.2w64/pg9.2/include -I../../../liblwgeom
 
 IMAGES= \
 	../images/de9im01.png \
@@ -56,6 +56,7 @@ IMAGES= \
 	../images/st_crosses02.png \
 	../images/st_crosses03.png \
 	../images/st_crosses04.png \
+	../images/st_delaunaytriangles04.png \
 	../images/st_difference01.png \
 	../images/st_dumppoints01.png \
 	../images/st_issimple01.png \

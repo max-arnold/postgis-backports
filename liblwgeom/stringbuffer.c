@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: stringbuffer.c 9485 2012-03-13 16:23:38Z pramsey $
+ * $Id: stringbuffer.c 11218 2013-03-28 13:32:44Z robe $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * Copyright 2002 Thamer Alharbash
@@ -209,7 +209,11 @@ stringbuffer_avprintf(stringbuffer_t *s, const char *fmt, va_list ap)
 
 	/* Propogate errors up */
 	if ( len < 0 ) 
+		#if defined(__MINGW64_VERSION_MAJOR)
+		len = _vscprintf(fmt, ap2);/**Assume windows flaky vsnprintf that returns -1 if initial buffer to small and add more space **/
+		#else
 		return len;
+		#endif
 
 	/* We didn't have enough space! */
 	/* Either Unix vsnprint returned write length larger than our buffer */

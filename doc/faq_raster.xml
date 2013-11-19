@@ -43,7 +43,7 @@
         	<para>Instructions for installing and running under windows are available at <ulink url="http://gis4free.wordpress.com/2011/03/10/how-to-install-and-configure-postgis-raster-on-windows/">How to Install and Configure PostGIS raster on windows</ulink></para>
         <para>
 			If you are on windows, you can compile yourself, or use the <ulink
-            url="http://www.postgis.org/download/windows/experimental.php#wktraster">pre-compiled
+            url="http://postgis.net/windows_downloads">pre-compiled
             PostGIS Raster windows binaries</ulink>.
 			If you are on Mac OSX Leopard or Snow Leopard, there are binaries available at <ulink url="http://www.kyngchaos.com/software/postgres">Kyng Chaos Mac OSX PostgreSQL/GIS binaries</ulink>.
 		</para>
@@ -117,11 +117,11 @@
 		 For example floating point band types and 32 bit unsigned ints
 		 	will not translate easily to JPG or some others.</para>
 		 <para>Here is an example simple translation</para>
-		  <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost dbname='mygisdb' user='postgres' password=whatever' schema='someschema' table=sometable" C:\somefile.png</programlisting>
+		  <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost port=5432 dbname='mygisdb' user='postgres' password='whatever' schema='someschema' table=sometable" C:\somefile.png</programlisting>
 		 <para>You can also use SQL where clauses in your export using the where=... in your driver connection string. 
 		 	Below are some using a where clause</para>
-		 <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost dbname='mygisdb' user='postgres' password=whatever' schema='someschema' table=sometable where="owner='jimmy'" " C:\somefile.png</programlisting>
-		 <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost dbname='mygisdb' user='postgres' password=whatever' schema='someschema' table=sometable where='ST_Intersects(rast, ST_SetSRID(ST_Point(-71.032,42.3793),4326) )' " C:\intersectregion.png</programlisting>
+		 <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost port=5432 dbname='mygisdb' user='postgres' password='whatever' schema='someschema' table=sometable where='filename=\'abcd.sid\''" " C:\somefile.png</programlisting>
+		 <programlisting>gdal_translate -of PNG -outsize 10% 10% "PG:host=localhost port=5432 dbname='mygisdb' user='postgres' password='whatever' schema='someschema' table=sometable where='ST_Intersects(rast, ST_SetSRID(ST_Point(-71.032,42.3793),4326) )' " C:\intersectregion.png</programlisting>
 		 <para>To see more examples and syntax refer to <ulink url="http://trac.osgeo.org/gdal/wiki/frmts_wtkraster.html#a3.2-Readingrasterdatafromthedatabase">Reading Raster Data of PostGIS Raster section</ulink></para>
       </answer>
     </qandaentry>
@@ -131,12 +131,11 @@
     	<answer>
     		<para>Yes. Check out the page <ulink url="http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries">GDAL Binaries</ulink> page.  Any compiled with PostgreSQL
     		support should have PostGIS Raster in them.  </para>
-    		<para>We know for sure the following windows binaries have PostGIS Raster built in.</para>
-    		<para><ulink url="http://fwtools.maptools.org/">FWTools latest stable version for Windows is compiled with Raster support</ulink>.</para>
     		<para>PostGIS Raster is undergoing many changes.  If you want to get the latest nightly build for Windows -- then check out 
 		 the Tamas Szekeres  nightly builds built with Visual Studio which contain GDAL trunk, Python Bindings and MapServer executables and PostGIS Raster driver built-in.  Just
 		 	click the SDK bat and run your commands from there.  <ulink url="http://vbkto.dyndns.org/sdk/">http://vbkto.dyndns.org/sdk/</ulink>.
 		 	Also available are VS project files.</para>
+		 	<para><ulink url="http://fwtools.maptools.org/">FWTools latest stable version for Windows is compiled with Raster support</ulink>.</para>
     	</answer>
     </qandaentry>
     
@@ -248,8 +247,6 @@ END
       </answer>
     </qandaentry>
     
-   
-    
     <qandaentry>
       <question>
         <para>How is PostGIS Raster different from Oracle GeoRaster (SDO_GEORASTER) and SDO_RASTER types?</para>
@@ -270,8 +267,8 @@ END
        	We think it is a big advantage that raster structure should benefit as well. </para>
       </answer>
     </qandaentry> 
-    
-    <qandaentry  id="qa_raster_fails_encoding_conversion">
+  
+  <qandaentry  id="qa_raster_fails_encoding_conversion">
       <question>
         <para>raster2pgsql load of large file fails with String of N bytes is too long for encoding conversion?</para>
       </question>
@@ -288,5 +285,5 @@ END
       </answer>
   </qandaentry> 
   
-  </qandaset>
+ </qandaset>
 </chapter>

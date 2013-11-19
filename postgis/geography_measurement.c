@@ -24,10 +24,14 @@
 #include "liblwgeom_internal.h"         /* For FP comparators. */
 #include "lwgeom_pg.h"       /* For debugging macros. */
 #include "geography.h"	     /* For utility functions. */
+#include "geography_measurement_trees.h" /* For circ_tree caching */
 #include "lwgeom_transform.h" /* For SRID functions */
 
 Datum geography_distance(PG_FUNCTION_ARGS);
+Datum geography_distance_uncached(PG_FUNCTION_ARGS);
+Datum geography_distance_tree(PG_FUNCTION_ARGS);
 Datum geography_dwithin(PG_FUNCTION_ARGS);
+Datum geography_dwithin_uncached(PG_FUNCTION_ARGS);
 Datum geography_area(PG_FUNCTION_ARGS);
 Datum geography_length(PG_FUNCTION_ARGS);
 Datum geography_expand(PG_FUNCTION_ARGS);
@@ -37,20 +41,21 @@ Datum geography_bestsrid(PG_FUNCTION_ARGS);
 Datum geography_perimeter(PG_FUNCTION_ARGS);
 Datum geography_project(PG_FUNCTION_ARGS);
 Datum geography_azimuth(PG_FUNCTION_ARGS);
+Datum geography_segmentize(PG_FUNCTION_ARGS);
 
 /*
-** geography_distance(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
+** geography_distance_uncached(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
 ** returns double distance in meters
 */
-PG_FUNCTION_INFO_V1(geography_distance);
-Datum geography_distance(PG_FUNCTION_ARGS)
+PG_FUNCTION_INFO_V1(geography_distance_uncached);
+Datum geography_distance_uncached(PG_FUNCTION_ARGS)
 {
 	LWGEOM *lwgeom1 = NULL;
 	LWGEOM *lwgeom2 = NULL;
 	GSERIALIZED *g1 = NULL;
 	GSERIALIZED *g2 = NULL;
 	double distance;
-	double tolerance;
+	/* double tolerance; */
 	bool use_spheroid;
 	SPHEROID s;
 
@@ -59,8 +64,8 @@ Datum geography_distance(PG_FUNCTION_ARGS)
 	g2 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
 	/* Read our tolerance value. */
-	tolerance = PG_GETARG_FLOAT8(2);
-
+	/* tolerance = PG_GETARG_FLOAT8(2); */
+    
 	/* Read our calculation type. */
 	use_spheroid = PG_GETARG_BOOL(3);
 
@@ -103,12 +108,192 @@ Datum geography_distance(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(distance);
 }
 
+
+/*
+** geography_distance(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
+** returns double distance in meters
+*/
+PG_FUNCTION_INFO_V1(geography_distance);
+Datum geography_distance(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED* g1 = NULL;
+	GSERIALIZED* g2 = NULL;
+	double distance;
+	double tolerance;
+	bool use_spheroid;
+	SPHEROID s;
+
+	/* Get our geometry objects loaded into memory. */
+	g1 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	g2 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+
+	/* Read our tolerance value. */
+	tolerance = PG_GETARG_FLOAT8(2);
+
+	/* Read our calculation type. */
+	use_spheroid = PG_GETARG_BOOL(3);
+
+	/* Initialize spheroid */
+	spheroid_init_from_srid(fcinfo, gserialized_get_srid(g1), &s);
+	
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	/* Return NULL on empty arguments. */
+	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+	{
+		PG_FREE_IF_COPY(g1, 0);
+		PG_FREE_IF_COPY(g2, 1);
+		PG_RETURN_NULL();
+	}
+	
+	/* Do the brute force calculation if the cached calculation doesn't tick over */
+	if ( LW_FAILURE == geography_distance_cache(fcinfo, g1, g2, &s, &distance) )
+	{
+		LWGEOM* lwgeom1 = lwgeom_from_gserialized(g1);
+		LWGEOM* lwgeom2 = lwgeom_from_gserialized(g2);
+		distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
+		lwgeom_free(lwgeom1);
+		lwgeom_free(lwgeom2);
+	}
+
+	/* Clean up */
+	PG_FREE_IF_COPY(g1, 0);
+	PG_FREE_IF_COPY(g2, 1);
+
+	/* Something went wrong, negative return... should already be eloged, return NULL */
+	if ( distance < 0.0 )
+	{
+		elog(ERROR, "distance returned negative!");
+		PG_RETURN_NULL();
+	}
+
+    /* Knock off any funny business at the micrometer level, ticket #2168 */
+    distance = round(distance * 10e8) / 10e8;
+
+	PG_RETURN_FLOAT8(distance);
+}
+
+
 /*
 ** geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
 ** returns double distance in meters
 */
 PG_FUNCTION_INFO_V1(geography_dwithin);
 Datum geography_dwithin(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *g1 = NULL;
+	GSERIALIZED *g2 = NULL;
+	double tolerance;
+	double distance;
+	bool use_spheroid;
+	SPHEROID s;
+	int dwithin = LW_FALSE;
+
+	/* Get our geometry objects loaded into memory. */
+	g1 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	g2 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+
+	/* Read our tolerance value. */
+	tolerance = PG_GETARG_FLOAT8(2);
+
+	/* Read our calculation type. */
+	use_spheroid = PG_GETARG_BOOL(3);
+
+	/* Initialize spheroid */
+	spheroid_init_from_srid(fcinfo, gserialized_get_srid(g1), &s);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	/* Return FALSE on empty arguments. */
+	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+	{
+		PG_FREE_IF_COPY(g1, 0);
+		PG_FREE_IF_COPY(g2, 1);
+		PG_RETURN_BOOL(FALSE);
+	}
+
+	/* Do the brute force calculation if the cached calculation doesn't tick over */
+	if ( LW_FAILURE == geography_dwithin_cache(fcinfo, g1, g2, &s, tolerance, &dwithin) )
+	{
+		LWGEOM* lwgeom1 = lwgeom_from_gserialized(g1);
+		LWGEOM* lwgeom2 = lwgeom_from_gserialized(g2);
+		distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
+		/* Something went wrong... */
+		if ( distance < 0.0 )
+			elog(ERROR, "lwgeom_distance_spheroid returned negative!");
+		dwithin = (distance <= tolerance);
+		lwgeom_free(lwgeom1);
+		lwgeom_free(lwgeom2);
+	}
+
+	/* Clean up */
+	PG_FREE_IF_COPY(g1, 0);
+	PG_FREE_IF_COPY(g2, 1);
+
+	PG_RETURN_BOOL(dwithin);
+}
+
+
+/*
+** geography_distance_tree(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
+** returns double distance in meters
+*/
+PG_FUNCTION_INFO_V1(geography_distance_tree);
+Datum geography_distance_tree(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *g1 = NULL;
+	GSERIALIZED *g2 = NULL;
+	double tolerance;
+	double distance;
+	bool use_spheroid;
+	SPHEROID s;
+
+	/* Get our geometry objects loaded into memory. */
+	g1 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	g2 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+
+	/* Return FALSE on empty arguments. */
+	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+	{
+		PG_FREE_IF_COPY(g1, 0);
+		PG_FREE_IF_COPY(g2, 1);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/* Read our tolerance value. */
+	tolerance = PG_GETARG_FLOAT8(2);
+
+	/* Read our calculation type. */
+	use_spheroid = PG_GETARG_BOOL(3);
+
+	/* Initialize spheroid */
+	spheroid_init_from_srid(fcinfo, gserialized_get_srid(g1), &s);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	if  ( geography_tree_distance(g1, g2, &s, tolerance, &distance) == LW_FAILURE )
+	{
+		elog(ERROR, "geography_distance_tree failed!");
+		PG_RETURN_NULL();
+	}
+	
+	PG_RETURN_FLOAT8(distance);
+}
+
+
+
+/*
+** geography_dwithin_uncached(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance, boolean use_spheroid)
+** returns double distance in meters
+*/
+PG_FUNCTION_INFO_V1(geography_dwithin_uncached);
+Datum geography_dwithin_uncached(PG_FUNCTION_ARGS)
 {
 	LWGEOM *lwgeom1 = NULL;
 	LWGEOM *lwgeom2 = NULL;
@@ -493,15 +678,13 @@ Datum geography_covers(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(geography_bestsrid);
 Datum geography_bestsrid(PG_FUNCTION_ARGS)
 {
-	LWGEOM *lwgeom1 = NULL;
-	LWGEOM *lwgeom2 = NULL;
-	GBOX gbox1;
-	GBOX gbox2;
+	GBOX gbox, gbox1, gbox2;
 	GSERIALIZED *g1 = NULL;
 	GSERIALIZED *g2 = NULL;
-	int type1, type2;
 	int empty1 = LW_FALSE;
 	int empty2 = LW_FALSE;
+	double xwidth, ywidth;
+	POINT2D center;
 
 	Datum d1 = PG_GETARG_DATUM(0);
 	Datum d2 = PG_GETARG_DATUM(1);
@@ -510,28 +693,22 @@ Datum geography_bestsrid(PG_FUNCTION_ARGS)
 	g1 = (GSERIALIZED*)PG_DETOAST_DATUM(d1);
 	/* Synchronize our box types */
 	gbox1.flags = g1->flags;
-	/* Read our types */
-	type1 = gserialized_get_type(g1);
-	/* Construct our working geometries */
-	lwgeom1 = lwgeom_from_gserialized(g1);
 	/* Calculate if the geometry is empty. */
-	empty1 = lwgeom_is_empty(lwgeom1);
-	/* Calculate a naive cartesian bounds for the objects */
-	if ( ! empty1 && lwgeom_calculate_gbox_cartesian(lwgeom1, &gbox1) == LW_FAILURE )
-		elog(ERROR, "Error in geography_bestsrid calling lwgeom_calculate_gbox(lwgeom1, &gbox1)");
-
+	empty1 = gserialized_is_empty(g1);
+	/* Calculate a geocentric bounds for the objects */
+	if ( ! empty1 && gserialized_get_gbox_p(g1, &gbox1) == LW_FAILURE )
+		elog(ERROR, "Error in geography_bestsrid calling gserialized_get_gbox_p(g1, &gbox1)");
+	
 	POSTGIS_DEBUGF(4, "calculated gbox = %s", gbox_to_string(&gbox1));
 
-	/* If we have a unique second argument, fill in all the necessarily variables. */
+	/* If we have a unique second argument, fill in all the necessary variables. */
 	if ( d1 != d2 )
 	{
 		g2 = (GSERIALIZED*)PG_DETOAST_DATUM(d2);
-		type2 = gserialized_get_type(g2);
 		gbox2.flags = g2->flags;
-		lwgeom2 = lwgeom_from_gserialized(g2);
-		empty2 = lwgeom_is_empty(lwgeom2);
-		if ( ! empty2 && lwgeom_calculate_gbox_cartesian(lwgeom2, &gbox2) == LW_FAILURE )
-			elog(ERROR, "Error in geography_bestsrid calling lwgeom_calculate_gbox(lwgeom2, &gbox2)");
+		empty2 = gserialized_is_empty(g2);
+		if ( ! empty1 && gserialized_get_gbox_p(g2, &gbox2) == LW_FAILURE )
+			elog(ERROR, "Error in geography_bestsrid calling gserialized_get_gbox_p(g2, &gbox2)");
 	}
 	/*
 	** If no unique second argument, copying the box for the first
@@ -539,29 +716,39 @@ Datum geography_bestsrid(PG_FUNCTION_ARGS)
 	*/
 	else
 	{
-		gbox2 = gbox1;
+		gbox = gbox2 = gbox1;
 	}
 
 	/* Both empty? We don't have an answer. */
 	if ( empty1 && empty2 )
 		PG_RETURN_NULL();
 
-	/* One empty? We can use the other argument values as infill. */
+	/* One empty? We can use the other argument values as infill. Otherwise merge the boxen */
 	if ( empty1 )
-		gbox1 = gbox2;
+		gbox = gbox2;
+	else if ( empty2 )
+		gbox = gbox1;
+	else
+		gbox_union(&gbox1, &gbox2, &gbox);
 
-	if ( empty2 )
-		gbox2 = gbox1;
+	gbox_centroid(&gbox, &center);
 
+	/* Width and height in degrees */
+	xwidth = 180.0 * gbox_angular_width(&gbox)  / M_PI;
+	ywidth = 180.0 * gbox_angular_height(&gbox) / M_PI;
+
+	POSTGIS_DEBUGF(2, "xwidth %g", xwidth);
+	POSTGIS_DEBUGF(2, "ywidth %g", ywidth);
+	POSTGIS_DEBUGF(2, "center POINT(%g %g)", center.x, center.y);
 
 	/* Are these data arctic? Lambert Azimuthal Equal Area North. */
-	if ( gbox1.ymin > 65.0 && gbox2.ymin > 65.0 )
+	if ( center.y > 70.0 && ywidth < 45.0 )
 	{
 		PG_RETURN_INT32(SRID_NORTH_LAMBERT);
 	}
 
 	/* Are these data antarctic? Lambert Azimuthal Equal Area South. */
-	if ( gbox1.ymin < -65.0 && gbox2.ymin < -65.0 )
+	if ( center.y < -70.0 && ywidth < 45.0 )
 	{
 		PG_RETURN_INT32(SRID_SOUTH_LAMBERT); 
 	}
@@ -572,15 +759,14 @@ Datum geography_bestsrid(PG_FUNCTION_ARGS)
 	** far as a half zone past a zone boundary.
 	** Note we have no handling for the date line in here.
 	*/
-	if ( fabs(FP_MAX(gbox1.xmax, gbox2.xmax) - FP_MIN(gbox1.xmin, gbox2.xmin)) < 6.0 )
+	if ( xwidth < 6.0 )
 	{
-		/* Cheap hack to pick a zone. Average of the box center points. */
-		double dzone = (gbox1.xmin + gbox1.xmax + gbox2.xmin + gbox2.xmax) / 4.0;
-		int zone = floor((dzone + 180.0) / 6.0);
+		int zone = floor((center.x + 180.0) / 6.0);
+		
 		if ( zone > 59 ) zone = 59;
 
 		/* Are these data below the equator? UTM South. */
-		if ( gbox1.ymax < 0.0 && gbox2.ymax < 0.0 )
+		if ( center.y < 0.0 )
 		{
 			PG_RETURN_INT32( SRID_SOUTH_UTM_START + zone );
 		}
@@ -588,6 +774,40 @@ Datum geography_bestsrid(PG_FUNCTION_ARGS)
 		else
 		{
 			PG_RETURN_INT32( SRID_NORTH_UTM_START + zone );
+		}
+	}
+
+	/*
+	** Can we fit into a custom LAEA area? (30 degrees high, variable width) 
+	** We will allow overlap into adjoining areas, but use a slightly narrower test (25) to try
+	** and minimize the worst case.
+	** Again, we are hoping the dateline doesn't trip us up much
+	*/
+	if ( ywidth < 25.0 )
+	{
+		int xzone = -1;
+		int yzone = 3 + floor(center.y / 30.0); /* (range of 0-5) */
+		
+		/* Equatorial band, 12 zones, 30 degrees wide */
+		if ( (yzone == 2 || yzone == 3) && xwidth < 30.0 )
+		{
+			xzone = 6 + floor(center.x / 30.0);
+		}
+		/* Temperate band, 8 zones, 45 degrees wide */
+		else if ( (yzone == 1 || yzone == 4) && xwidth < 45.0 )
+		{
+			xzone = 4 + floor(center.x / 45.0);
+		}
+		/* Arctic band, 4 zones, 90 degrees wide */
+		else if ( (yzone == 0 || yzone == 5) && xwidth < 90.0 )
+		{
+			xzone = 2 + floor(center.x / 90.0);
+		}
+		
+		/* Did we fit into an appropriate xzone? */
+		if ( xzone != -1 )
+		{
+			PG_RETURN_INT32(SRID_LAEA_START + 20 * yzone + xzone);
 		}
 	}
 
@@ -736,6 +956,48 @@ Datum geography_azimuth(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_FLOAT8(azimuth);
+}
+
+
+
+/*
+** geography_segmentize(GSERIALIZED *g1, double max_seg_length)
+** returns densified geometry with no segment longer than max
+*/
+PG_FUNCTION_INFO_V1(geography_segmentize);
+Datum geography_segmentize(PG_FUNCTION_ARGS)
+{
+	LWGEOM *lwgeom1 = NULL;
+	LWGEOM *lwgeom2 = NULL;
+	GSERIALIZED *g1 = NULL;
+	GSERIALIZED *g2 = NULL;
+	double max_seg_length;
+	uint32_t type1;
+
+	/* Get our geometry object loaded into memory. */
+	g1 = (GSERIALIZED*)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    type1 = gserialized_get_type(g1);
+
+	/* Convert max_seg_length from metric units to radians */
+	max_seg_length = PG_GETARG_FLOAT8(1) / WGS84_RADIUS;
+
+	/* We can't densify points or points, reflect them back */
+    if ( type1 == POINTTYPE || type1 == MULTIPOINTTYPE || gserialized_is_empty(g1) )
+		PG_RETURN_POINTER(g1);
+
+	/* Deserialize */
+	lwgeom1 = lwgeom_from_gserialized(g1);
+
+	/* Calculate the densified geometry */
+	lwgeom2 = lwgeom_segmentize_sphere(lwgeom1, max_seg_length);
+	g2 = geography_serialize(lwgeom2);
+	
+	/* Clean up */
+	lwgeom_free(lwgeom1);
+	lwgeom_free(lwgeom2);
+	PG_FREE_IF_COPY(g1, 0);
+
+	PG_RETURN_POINTER(g2);
 }
 
 

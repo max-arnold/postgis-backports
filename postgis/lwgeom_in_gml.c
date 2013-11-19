@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_in_gml.c 10765 2012-11-29 22:12:39Z colivier $
+ * $Id: lwgeom_in_gml.c 10767 2012-11-29 22:33:21Z colivier $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -1107,8 +1107,8 @@ static LWGEOM* parse_gml_linearring(xmlNodePtr xnode, bool *hasz, int *root_srid
 	ppa[0] = parse_gml_data(xnode->children, hasz, root_srid);
 
 	if (ppa[0]->npoints < 4
-            || (!*hasz && !ptarray_isclosed2d(ppa[0]))
-            ||  (*hasz && !ptarray_isclosed3d(ppa[0])))
+            || (!*hasz && !ptarray_is_closed_2d(ppa[0]))
+            ||  (*hasz && !ptarray_is_closed_3d(ppa[0])))
 	    gml_lwerror("invalid GML representation", 42);
 
 	if (srs.reverse_axis) 
@@ -1147,8 +1147,8 @@ static LWGEOM* parse_gml_polygon(xmlNodePtr xnode, bool *hasz, int *root_srid)
 		/* Polygon/exterior        -> GML 3.1.1 */
 		if (xa->type != XML_ELEMENT_NODE) continue;
 		if (!is_gml_namespace(xa, false)) continue;
-		if (strcmp((char *) xa->name, "outerBoundaryIs") &&
-		    strcmp((char *) xa->name, "exterior")) continue;
+		if  (strcmp((char *) xa->name, "outerBoundaryIs") &&
+		        strcmp((char *) xa->name, "exterior")) continue;
 
 		for (xb = xa->children ; xb != NULL ; xb = xb->next)
 		{
@@ -1160,19 +1160,18 @@ static LWGEOM* parse_gml_polygon(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			ppa[0] = parse_gml_data(xb->children, hasz, root_srid);
 
 			if (ppa[0]->npoints < 4
-			        || (!*hasz && !ptarray_isclosed2d(ppa[0]))
-			        ||  (*hasz && !ptarray_isclosed3d(ppa[0])))
+			        || (!*hasz && !ptarray_is_closed_2d(ppa[0]))
+			        ||  (*hasz && !ptarray_is_closed_3d(ppa[0])))
 				gml_lwerror("invalid GML representation", 43);
 
 			if (srs.reverse_axis) ppa[0] = ptarray_flip_coordinates(ppa[0]);
 		}
-
 	}
 
 	/* Found an <exterior> or <outerBoundaryIs> but no rings?!? We're outa here! */
 	if ( ! ppa )
 		gml_lwerror("invalid GML representation", 43);	
-	
+
 	for (ring=1, xa = xnode->children ; xa != NULL ; xa = xa->next)
 	{
 		/* Polygon/innerBoundaryIs -> GML 2.1.2 */
@@ -1193,8 +1192,8 @@ static LWGEOM* parse_gml_polygon(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			ppa[ring] = parse_gml_data(xb->children, hasz, root_srid);
 
 			if (ppa[ring]->npoints < 4
-			        || (!*hasz && !ptarray_isclosed2d(ppa[ring]))
-			        ||  (*hasz && !ptarray_isclosed3d(ppa[ring])))
+			        || (!*hasz && !ptarray_is_closed_2d(ppa[ring]))
+			        ||  (*hasz && !ptarray_is_closed_3d(ppa[ring])))
 				gml_lwerror("invalid GML representation", 43);
 
 			if (srs.reverse_axis) ppa[ring] = ptarray_flip_coordinates(ppa[ring]);
@@ -1263,8 +1262,8 @@ static LWGEOM* parse_gml_triangle(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			pa = parse_gml_data(xb->children, hasz, root_srid);
 
 			if (pa->npoints != 4
-			        || (!*hasz && !ptarray_isclosed2d(pa))
-			        ||  (*hasz && !ptarray_isclosed3d(pa)))
+			        || (!*hasz && !ptarray_is_closed_2d(pa))
+			        ||  (*hasz && !ptarray_is_closed_3d(pa)))
 				gml_lwerror("invalid GML representation", 46);
 
 			if (srs.reverse_axis) pa = ptarray_flip_coordinates(pa);
@@ -1327,8 +1326,8 @@ static LWGEOM* parse_gml_patch(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			ppa[0] = parse_gml_data(xb->children, hasz, root_srid);
 
 			if (ppa[0]->npoints < 4
-			        || (!*hasz && !ptarray_isclosed2d(ppa[0]))
-			        ||  (*hasz && !ptarray_isclosed3d(ppa[0])))
+			        || (!*hasz && !ptarray_is_closed_2d(ppa[0]))
+			        ||  (*hasz && !ptarray_is_closed_3d(ppa[0])))
 				gml_lwerror("invalid GML representation", 48);
 
 			if (srs.reverse_axis)
@@ -1354,8 +1353,8 @@ static LWGEOM* parse_gml_patch(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			ppa[ring] = parse_gml_data(xb->children, hasz, root_srid);
 
 			if (ppa[ring]->npoints < 4
-			        || (!*hasz && !ptarray_isclosed2d(ppa[ring]))
-			        || ( *hasz && !ptarray_isclosed3d(ppa[ring])))
+			        || (!*hasz && !ptarray_is_closed_2d(ppa[ring]))
+			        || ( *hasz && !ptarray_is_closed_3d(ppa[ring])))
 				gml_lwerror("invalid GML representation", 49);
 
 			if (srs.reverse_axis)

@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_functions_basic.c 9712 2012-05-04 08:06:16Z strk $
+ * $Id: lwgeom_functions_basic.c 11755 2013-08-09 07:00:25Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -17,7 +17,6 @@
 #include "utils/geo_decls.h"
 
 #include "liblwgeom_internal.h"
-#include "libtgeom.h"
 #include "lwgeom_pg.h"
 
 #include <math.h>
@@ -70,6 +69,7 @@ Datum LWGEOM_isempty(PG_FUNCTION_ARGS);
 Datum LWGEOM_segmentize2d(PG_FUNCTION_ARGS);
 Datum LWGEOM_reverse(PG_FUNCTION_ARGS);
 Datum LWGEOM_force_clockwise_poly(PG_FUNCTION_ARGS);
+Datum LWGEOM_force_sfs(PG_FUNCTION_ARGS);
 Datum LWGEOM_noop(PG_FUNCTION_ARGS);
 Datum LWGEOM_zmflag(PG_FUNCTION_ARGS);
 Datum LWGEOM_hasz(PG_FUNCTION_ARGS);
@@ -492,15 +492,59 @@ Datum LWGEOM_force_multi(PG_FUNCTION_ARGS)
 	** in input. If bbox cache is not there we'll need to handle
 	** automatic bbox addition FOR_COMPLEX_GEOMS.
 	*/
-	if ( lwtype_is_collection(gserialized_get_type(geom)) && 
-	     gserialized_has_bbox(geom) )
-	{
-		PG_RETURN_POINTER(geom);
+	if ( gserialized_has_bbox(geom) ) {
+		switch (gserialized_get_type(geom)) 
+		{
+			case MULTIPOINTTYPE:
+			case MULTILINETYPE:
+			case MULTIPOLYGONTYPE:
+			case COLLECTIONTYPE:
+			case MULTICURVETYPE:
+			case MULTISURFACETYPE:
+			case TINTYPE:
+				PG_RETURN_POINTER(geom);
+			default:
+				break;
+		}
 	}
 
 	/* deserialize into lwgeoms[0] */
 	lwgeom = lwgeom_from_gserialized(geom);
 	ogeom = lwgeom_as_multi(lwgeom);
+
+	result = geometry_serialize(ogeom);
+
+	PG_FREE_IF_COPY(geom, 0);
+
+	PG_RETURN_POINTER(result);
+}
+
+/** transform input geometry to a SFS 1.1 geometry type compliant */
+PG_FUNCTION_INFO_V1(LWGEOM_force_sfs);
+Datum LWGEOM_force_sfs(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+	GSERIALIZED *result;
+	LWGEOM *lwgeom;
+	LWGEOM *ogeom;
+	text * ver;
+	int version = 110; /* default version is SFS 1.1 */
+
+	POSTGIS_DEBUG(2, "LWGEOM_force_sfs called");
+
+        /* If user specified version, respect it */
+        if ( (PG_NARGS()>1) && (!PG_ARGISNULL(1)) )
+        {
+                ver = PG_GETARG_TEXT_P(1);
+
+                if  ( ! strncmp(VARDATA(ver), "1.2", 3))
+                {
+                        version = 120;
+                }
+        }
+
+	lwgeom = lwgeom_from_gserialized(geom);
+	ogeom = lwgeom_force_sfs(lwgeom, version);
 
 	result = geometry_serialize(ogeom);
 
@@ -1027,22 +1071,24 @@ Datum LWGEOM_inside_circle_point(PG_FUNCTION_ARGS)
 	double cx = PG_GETARG_FLOAT8(1);
 	double cy = PG_GETARG_FLOAT8(2);
 	double rr = PG_GETARG_FLOAT8(3);
-	LWPOINT *point;
-	POINT2D pt;
+	LWPOINT *lwpoint;
+	LWGEOM *lwgeom;
+	int inside;
 
 	geom = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-	point = lwgeom_as_lwpoint(lwgeom_from_gserialized(geom));
-	if ( point == NULL )
+	lwgeom = lwgeom_from_gserialized(geom);
+	lwpoint = lwgeom_as_lwpoint(lwgeom);
+	if ( lwpoint == NULL || lwgeom_is_empty(lwgeom) )
 	{
 		PG_FREE_IF_COPY(geom, 0);
 		PG_RETURN_NULL(); /* not a point */
 	}
 
-	getPoint2d_p(point->point, 0, &pt);
+	inside = lwpoint_inside_circle(lwpoint, cx, cy, rr);
+	lwpoint_free(lwpoint);
 
 	PG_FREE_IF_COPY(geom, 0);
-
-	PG_RETURN_BOOL(lwgeom_pt_inside_circle(&pt, cx, cy, rr));
+	PG_RETURN_BOOL(inside);
 }
 
 /**
@@ -2504,9 +2550,8 @@ Datum ST_GeoHash(PG_FUNCTION_ARGS)
 
 	GSERIALIZED *geom = NULL;
 	int precision = 0;
-	int len = 0;
 	char *geohash = NULL;
-	char *result = NULL;
+	text *result = NULL;
 
 	if ( PG_ARGISNULL(0) )
 	{
@@ -2525,13 +2570,10 @@ Datum ST_GeoHash(PG_FUNCTION_ARGS)
 	if ( ! geohash )
 		PG_RETURN_NULL();
 
-	len = strlen(geohash) + VARHDRSZ;
-	result = palloc(len);
-	SET_VARSIZE(result, len);
-	memcpy(VARDATA(result), geohash, len-VARHDRSZ);
+	result = cstring2text(geohash);
 	pfree(geohash);
-	PG_RETURN_POINTER(result);
-
+	
+	PG_RETURN_TEXT_P(result);
 }
 
 PG_FUNCTION_INFO_V1(ST_CollectionExtract);

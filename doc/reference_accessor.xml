@@ -122,6 +122,7 @@
 		<para>&sfs_compliant; OGC SPEC s2.1.1.1</para>
 		<para>&sqlmm_compliant; SQL-MM 3: 5.1.14</para>
 		<para>&Z_support;</para>
+		<para>Enhanced: 2.1.0 support for Triangle was introduced</para>
 	  </refsection>
 
 	  <refsection>
@@ -1891,8 +1892,9 @@ VALUES (ST_GeomFromEWKT('POLYHEDRALSURFACE( ((0 0 0, 0 0 1, 0 1 1, 0 1 0, 0 0 0)
 	  <refnamediv>
 		<refname>ST_PointN</refname>
 
-		<refpurpose>Return the Nth point in a linestring or circular linestring in the
-			geometry. Return NULL if geometry is not a linestring or circular linestring</refpurpose>
+		<refpurpose>Return the Nth point in the first linestring or circular linestring in the
+			geometry. Return NULL if there is no linestring in the
+			geometry.</refpurpose>
 	  </refnamediv>
 
 	  <refsynopsisdiv>
@@ -1908,7 +1910,7 @@ VALUES (ST_GeomFromEWKT('POLYHEDRALSURFACE( ((0 0 0, 0 0 1, 0 1 1, 0 1 0, 0 0 0)
 	  <refsection>
 		<title>Description</title>
 
-		<para>Return the Nth point in a linestring or circular linestring in the
+		<para>Return the Nth point in a single linestring or circular linestring in the
 			geometry. Return NULL if there is no linestring in the
 			geometry.</para>
 
@@ -2111,10 +2113,13 @@ Returns a text summary of the contents of the geometry.
                     <listitem><para>Z: has Z ordinate</para></listitem>
                     <listitem><para>B: has a cached bounding box</para></listitem>
                     <listitem><para>G: is geodetic (geography)</para></listitem>
+                    <listitem><para>S: has spatial reference system</para></listitem>
                   </itemizedlist>
                 </para>
 
-		<para>Availability: 1.2.2 - 2.0.0 added support for geography</para>
+		<para>Availability: 1.2.2</para>
+		<para>Enhanced: 2.0.0 added support for geography</para>
+		<para>Enhanced: 2.1.0 S flag to denote if has a known spatial reference system</para>
 
 	  </refsection>
 
@@ -2126,20 +2131,20 @@ Returns a text summary of the contents of the geometry.
         ST_Summary(ST_GeogFromText('POLYGON((0 0, 1 1, 1 2, 1 1, 0 0))')) geog;
             geom             |          geog    
 -----------------------------+--------------------------
- LineString[B] with 2 points | Polygon[BG] with 1 rings
-                             :    ring 0 has 5 points
+ LineString[B] with 2 points | Polygon[BGS] with 1 rings
+                             | ring 0 has 5 points
                              :
 (1 row)
 
 
 =# SELECT ST_Summary(ST_GeogFromText('LINESTRING(0 0 1, 1 1 1)')) As geog_line,
-        ST_Summary(ST_GeomFromText('POLYGON((0 0 1, 1 1 2, 1 2 3, 1 1 1, 0 0 1))')) As geom_poly;
+        ST_Summary(ST_GeomFromText('SRID=4326;POLYGON((0 0 1, 1 1 2, 1 2 3, 1 1 1, 0 0 1))')) As geom_poly;
 ;
-           geog_line           |        geom_poly
--------------------------------+--------------------------
- LineString[ZBG] with 2 points | Polygon[ZB] with 1 rings
-                               :    ring 0 has 5 points
-                               :
+           geog_line             |        geom_poly
+-------------------------------- +--------------------------
+ LineString[ZBGS] with 2 points | Polygon[ZBS] with 1 rings
+                                :    ring 0 has 5 points
+                                :
 (1 row)
 
 </programlisting>
