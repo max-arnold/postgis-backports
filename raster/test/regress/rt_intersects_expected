@@ -1,5 +1,3 @@
-NOTICE:  table "raster_intersects_rast" does not exist, skipping
-NOTICE:  table "raster_intersects_geom" does not exist, skipping
 1.1|0|1|t
 1.1|0|2|t
 1.1|0|10|t
@@ -194,13 +192,13 @@ NOTICE:  table "raster_intersects_geom" does not exist, skipping
 2.5|0|32|ST_Polygon|t
 2.5|0|33|ST_Polygon|t
 2.5|0|34|ST_Polygon|t
-2.5|0|35|ST_Polygon|f
+2.5|0|35|ST_Polygon|t
 2.5|0|36|ST_Polygon|f
 2.5|0|41|ST_MultiPolygon|t
 2.5|0|42|ST_MultiPolygon|t
 2.5|0|43|ST_MultiPolygon|t
 2.5|0|44|ST_MultiPolygon|t
-2.5|0|45|ST_MultiPolygon|f
+2.5|0|45|ST_MultiPolygon|t
 2.5|0|46|ST_MultiPolygon|f
 2.6|2|1|ST_Point|t
 2.6|2|2|ST_Point|t

@@ -1,10 +1,12 @@
 2|-6.858|-3.429|6.571|-10.000|3.142
+100|-6.858|-0.069|1.046|-10.000|3.142
 2
 100
 -3.429|6.571
 -0.069|1.046
 NOTICE:  Invalid band index (must use 1-based). Returning NULL
 |
+NOTICE:  All pixels of band have the NODATA value
 (0,,,,,)
 NOTICE:  Band is empty as width and/or height is 0
 (0,,,,,)

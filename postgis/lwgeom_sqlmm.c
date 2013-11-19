@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_sqlmm.c 10672 2012-11-14 21:26:05Z pramsey $
+ * $Id: lwgeom_sqlmm.c 10671 2012-11-14 21:25:52Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net

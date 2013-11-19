@@ -61,6 +61,8 @@ COMMENT ON FUNCTION ST_BdPolyFromText(text , integer ) IS 'args: WKT, srid - Con
 			
 COMMENT ON FUNCTION ST_BdMPolyFromText(text , integer ) IS 'args: WKT, srid - Construct a MultiPolygon given an arbitrary collection of closed linestrings as a MultiLineString text representation Well-Known text representation.';
 			
+COMMENT ON FUNCTION ST_Box2dFromGeoHash(text , integer ) IS 'args: geohash, precision=full_precision_of_geohash - Return a BOX2D from a GeoHash string.';
+			
 COMMENT ON FUNCTION ST_GeogFromText(text ) IS 'args: EWKT - Return a specified geography value from Well-Known Text representation or extended (WKT).';
 			
 COMMENT ON FUNCTION ST_GeographyFromText(text ) IS 'args: EWKT - Return a specified geography value from Well-Known Text representation or extended (WKT).';
@@ -78,6 +80,8 @@ COMMENT ON FUNCTION ST_GeomFromEWKT(text ) IS 'args: EWKT - Return a specified S
 COMMENT ON FUNCTION ST_GeometryFromText(text ) IS 'args: WKT - Return a specified ST_Geometry value from Well-Known Text representation (WKT). This is an alias name for ST_GeomFromText';
 			
 COMMENT ON FUNCTION ST_GeometryFromText(text , integer ) IS 'args: WKT, srid - Return a specified ST_Geometry value from Well-Known Text representation (WKT). This is an alias name for ST_GeomFromText';
+			
+COMMENT ON FUNCTION ST_GeomFromGeoHash(text , integer ) IS 'args: geohash, precision=full_precision_of_geohash - Return a geometry from a GeoHash string.';
 			
 COMMENT ON FUNCTION ST_GeomFromGML(text ) IS 'args: geomgml - Takes as input GML representation of geometry and outputs a PostGIS geometry object';
 			
@@ -150,6 +154,8 @@ COMMENT ON FUNCTION ST_MPolyFromText(text , integer ) IS 'args: WKT, srid - Make
 COMMENT ON FUNCTION ST_MPolyFromText(text ) IS 'args: WKT - Makes a MultiPolygon Geometry from WKT with the given SRID. If SRID is not give, it defaults to -1.';
 			
 COMMENT ON FUNCTION ST_Point(float , float ) IS 'args: x_lon, y_lat - Returns an ST_Point with the given coordinate values. OGC alias for ST_MakePoint.';
+			
+COMMENT ON FUNCTION ST_PointFromGeoHash(text , integer ) IS 'args: geohash, precision=full_precision_of_geohash - Return a point from a GeoHash string.';
 			
 COMMENT ON FUNCTION ST_PointFromText(text ) IS 'args: WKT - Makes a point Geometry from WKT with the given SRID. If SRID is not given, it defaults to unknown.';
 			
@@ -231,7 +237,7 @@ COMMENT ON FUNCTION ST_NumPoints(geometry ) IS 'args: g1 - Return the number of 
 			
 COMMENT ON FUNCTION ST_PatchN(geometry , integer ) IS 'args: geomA, n - Return the 1-based Nth geometry (face) if the geometry is a POLYHEDRALSURFACE, POLYHEDRALSURFACEM. Otherwise, return NULL.';
 			
-COMMENT ON FUNCTION ST_PointN(geometry , integer ) IS 'args: a_linestring, n - Return the Nth point in a linestring or circular linestring in the geometry. Return NULL if geometry is not a linestring or circular linestring';
+COMMENT ON FUNCTION ST_PointN(geometry , integer ) IS 'args: a_linestring, n - Return the Nth point in the first linestring or circular linestring in the geometry. Return NULL if there is no linestring in the geometry.';
 			
 COMMENT ON FUNCTION ST_SRID(geometry ) IS 'args: g1 - Returns the spatial reference identifier for the ST_Geometry as defined in spatial_ref_sys table.';
 			
@@ -269,17 +275,21 @@ COMMENT ON FUNCTION ST_Affine(geometry , float , float , float , float , float ,
 			
 COMMENT ON FUNCTION ST_Affine(geometry , float , float , float , float , float , float ) IS 'args: geomA, a, b, d, e, xoff, yoff - Applies a 3d affine transformation to the geometry to do things like translate, rotate, scale in one step.';
 			
-COMMENT ON FUNCTION ST_Force_2D(geometry ) IS 'args: geomA - Forces the geometries into a "2-dimensional mode" so that all output representations will only have the X and Y coordinates.';
+COMMENT ON FUNCTION ST_Force2D(geometry ) IS 'args: geomA - Forces the geometries into a "2-dimensional mode" so that all output representations will only have the X and Y coordinates.';
 			
-COMMENT ON FUNCTION ST_Force_3D(geometry ) IS 'args: geomA - Forces the geometries into XYZ mode. This is an alias for ST_Force_3DZ.';
+COMMENT ON FUNCTION ST_Force3D(geometry ) IS 'args: geomA - Forces the geometries into XYZ mode. This is an alias for ST_Force3DZ.';
 			
-COMMENT ON FUNCTION ST_Force_3DZ(geometry ) IS 'args: geomA - Forces the geometries into XYZ mode. This is a synonym for ST_Force_3D.';
+COMMENT ON FUNCTION ST_Force3DZ(geometry ) IS 'args: geomA - Forces the geometries into XYZ mode. This is a synonym for ST_Force3D.';
 			
-COMMENT ON FUNCTION ST_Force_3DM(geometry ) IS 'args: geomA - Forces the geometries into XYM mode.';
+COMMENT ON FUNCTION ST_Force3DM(geometry ) IS 'args: geomA - Forces the geometries into XYM mode.';
 			
-COMMENT ON FUNCTION ST_Force_4D(geometry ) IS 'args: geomA - Forces the geometries into XYZM mode.';
+COMMENT ON FUNCTION ST_Force4D(geometry ) IS 'args: geomA - Forces the geometries into XYZM mode.';
 			
-COMMENT ON FUNCTION ST_Force_Collection(geometry ) IS 'args: geomA - Converts the geometry into a GEOMETRYCOLLECTION.';
+COMMENT ON FUNCTION ST_ForceCollection(geometry ) IS 'args: geomA - Converts the geometry into a GEOMETRYCOLLECTION.';
+			
+COMMENT ON FUNCTION ST_ForceSFS(geometry ) IS 'args: geomA - Forces the geometries to use SFS 1.1 geometry types only.';
+			
+COMMENT ON FUNCTION ST_ForceSFS(geometry , text ) IS 'args: geomA, version - Forces the geometries to use SFS 1.1 geometry types only.';
 			
 COMMENT ON FUNCTION ST_ForceRHR(geometry) IS 'args: g - Forces the orientation of the vertices in a polygon to follow the Right-Hand-Rule.';
 			
@@ -311,7 +321,9 @@ COMMENT ON FUNCTION ST_Scale(geometry , float, float, float) IS 'args: geomA, XF
 			
 COMMENT ON FUNCTION ST_Scale(geometry , float, float) IS 'args: geomA, XFactor, YFactor - Scales the geometry to a new size by multiplying the ordinates with the parameters. Ie: ST_Scale(geom, Xfactor, Yfactor, Zfactor).';
 			
-COMMENT ON FUNCTION ST_Segmentize(geometry , float ) IS 'args: geomA, max_length - Return a modified geometry having no segment longer than the given distance. Distance computation is performed in 2d only.';
+COMMENT ON FUNCTION ST_Segmentize(geometry , float ) IS 'args: geom, max_segment_length - Return a modified geometry/geography having no segment longer than the given distance. Distance computation is performed in 2d only. For geometry, length units are in units of spatial reference. For geography, units are in meters.';
+			
+COMMENT ON FUNCTION ST_Segmentize(geography , float ) IS 'args: geog, max_segment_length - Return a modified geometry/geography having no segment longer than the given distance. Distance computation is performed in 2d only. For geometry, length units are in units of spatial reference. For geography, units are in meters.';
 			
 COMMENT ON FUNCTION ST_SetPoint(geometry, integer, geometry) IS 'args: linestring, zerobasedposition, point - Replace point N of linestring with given point. Index is 0-based.';
 			
@@ -359,13 +371,9 @@ COMMENT ON FUNCTION ST_AsGeoJSON(integer , geometry , integer , integer ) IS 'ar
 			
 COMMENT ON FUNCTION ST_AsGeoJSON(integer , geography , integer , integer ) IS 'args: gj_version, geog, maxdecimaldigits=15, options=0 - Return the geometry as a GeoJSON element.';
 			
-COMMENT ON FUNCTION ST_AsGML(geometry , integer , integer ) IS 'args: geom, maxdecimaldigits=15, options=0 - Return the geometry as a GML version 2 or 3 element.';
+COMMENT ON FUNCTION ST_AsGML(integer , geometry , integer , integer , text , text ) IS 'args: version, geom, maxdecimaldigits=15, options=0, nprefix=null, id=null - Return the geometry as a GML version 2 or 3 element.';
 			
-COMMENT ON FUNCTION ST_AsGML(geography , integer , integer ) IS 'args: geog, maxdecimaldigits=15, options=0 - Return the geometry as a GML version 2 or 3 element.';
-			
-COMMENT ON FUNCTION ST_AsGML(integer , geometry , integer , integer , text ) IS 'args: version, geom, maxdecimaldigits=15, options=0, nprefix=null - Return the geometry as a GML version 2 or 3 element.';
-			
-COMMENT ON FUNCTION ST_AsGML(integer , geography , integer , integer , text ) IS 'args: version, geog, maxdecimaldigits=15, options=0, nprefix=null - Return the geometry as a GML version 2 or 3 element.';
+COMMENT ON FUNCTION ST_AsGML(integer , geography , integer , integer , text , text ) IS 'args: version, geog, maxdecimaldigits=15, options=0, nprefix=null, id=null - Return the geometry as a GML version 2 or 3 element.';
 			
 COMMENT ON FUNCTION ST_AsHEXEWKB(geometry , text ) IS 'args: g1, NDRorXDR - Returns a Geometry in HEXEWKB format (as text) using either little-endian (NDR) or big-endian (XDR) encoding.';
 			
@@ -385,7 +393,7 @@ COMMENT ON FUNCTION ST_AsSVG(geography , integer , integer ) IS 'args: geog, rel
 			
 COMMENT ON FUNCTION ST_AsX3D(geometry , integer , integer ) IS 'args: g1, maxdecimaldigits=15, options=0 - Returns a Geometry in X3D xml node element format: ISO-IEC-19776-1.2-X3DEncodings-XML';
 			
-COMMENT ON FUNCTION ST_GeoHash(geometry , integer ) IS 'args: geom, maxchars=full_precision_of_point - Return a GeoHash representation (geohash.org) of the geometry.';
+COMMENT ON FUNCTION ST_GeoHash(geometry , integer ) IS 'args: geom, maxchars=full_precision_of_point - Return a GeoHash representation of the geometry.';
 			
 COMMENT ON FUNCTION ST_AsText(geometry ) IS 'args: g1 - Return the Well-Known Text (WKT) representation of the geometry/geography without SRID metadata.';
 			
@@ -415,9 +423,9 @@ COMMENT ON FUNCTION ST_Area(geometry ) IS 'args: g1 - Returns the area of the su
 			
 COMMENT ON FUNCTION ST_Area(geography , boolean ) IS 'args: geog, use_spheroid=true - Returns the area of the surface if it is a polygon or multi-polygon. For "geometry" type area is in SRID units. For "geography" area is in square meters.';
 			
-COMMENT ON FUNCTION ST_Azimuth(geometry , geometry ) IS 'args: pointA, pointB - Returns the angle in radians from the horizontal of the vector defined by pointA and pointB. Angle is computed clockwise from down-to-up: on the clock: 12=0; 3=PI/2; 6=PI; 9=3PI/2.';
+COMMENT ON FUNCTION ST_Azimuth(geometry , geometry ) IS 'args: pointA, pointB - Returns the north-based azimuth as the angle in radians measured clockwise from the vertical on pointA to pointB.';
 			
-COMMENT ON FUNCTION ST_Azimuth(geography , geography ) IS 'args: pointA, pointB - Returns the angle in radians from the horizontal of the vector defined by pointA and pointB. Angle is computed clockwise from down-to-up: on the clock: 12=0; 3=PI/2; 6=PI; 9=3PI/2.';
+COMMENT ON FUNCTION ST_Azimuth(geography , geography ) IS 'args: pointA, pointB - Returns the north-based azimuth as the angle in radians measured clockwise from the vertical on pointA to pointB.';
 			
 COMMENT ON FUNCTION ST_Centroid(geometry ) IS 'args: g1 - Returns the geometric center of a geometry.';
 			
@@ -543,6 +551,8 @@ COMMENT ON FUNCTION ST_CurveToLine(geometry) IS 'args: curveGeom - Converts a CI
 			
 COMMENT ON FUNCTION ST_CurveToLine(geometry, integer) IS 'args: curveGeom, segments_per_qtr_circle - Converts a CIRCULARSTRING/CURVEDPOLYGON to a LINESTRING/POLYGON';
 			
+COMMENT ON FUNCTION ST_DelaunayTriangles(geometry , float , int4 ) IS 'args: g1, tolerance, flags - Return a Delaunay triangulation around the given input points.';
+			
 COMMENT ON FUNCTION ST_Difference(geometry , geometry ) IS 'args: geomA, geomB - Returns a geometry that represents that part of geometry A that does not intersect with geometry B.';
 			
 COMMENT ON FUNCTION ST_Dump(geometry ) IS 'args: g1 - Returns a set of geometry_dump (geom,path) rows, that make up a geometry g1.';
@@ -559,7 +569,7 @@ COMMENT ON FUNCTION ST_Intersection(geography, geography) IS 'args: geogA, geogB
 			
 COMMENT ON FUNCTION ST_LineToCurve(geometry ) IS 'args: geomANoncircular - Converts a LINESTRING/POLYGON to a CIRCULARSTRING, CURVED POLYGON';
 			
-COMMENT ON FUNCTION ST_MakeValid(geometry) IS 'args: input - Attempts to make an invalid geometry valid w/out loosing vertices.';
+COMMENT ON FUNCTION ST_MakeValid(geometry) IS 'args: input - Attempts to make an invalid geometry valid without losing vertices.';
 			
 COMMENT ON AGGREGATE ST_MemUnion(geometry) IS 'args: geomfield - Same as ST_Union, only memory-friendly (uses less memory and more processor time).';
 			
@@ -595,11 +605,11 @@ COMMENT ON FUNCTION ST_Union(geometry[]) IS 'args: g1_array - Returns a geometry
 			
 COMMENT ON FUNCTION ST_UnaryUnion(geometry ) IS 'args: geom - Like ST_Union, but working at the geometry component level.';
 			
-COMMENT ON FUNCTION ST_Line_Interpolate_Point(geometry , float ) IS 'args: a_linestring, a_fraction - Returns a point interpolated along a line. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.';
+COMMENT ON FUNCTION ST_LineInterpolatePoint(geometry , float ) IS 'args: a_linestring, a_fraction - Returns a point interpolated along a line. Second argument is a float8 between 0 and 1 representing fraction of total length of linestring the point has to be located.';
 			
-COMMENT ON FUNCTION ST_Line_Locate_Point(geometry , geometry ) IS 'args: a_linestring, a_point - Returns a float between 0 and 1 representing the location of the closest point on LineString to the given Point, as a fraction of total 2d line length.';
+COMMENT ON FUNCTION ST_LineLocatePoint(geometry , geometry ) IS 'args: a_linestring, a_point - Returns a float between 0 and 1 representing the location of the closest point on LineString to the given Point, as a fraction of total 2d line length.';
 			
-COMMENT ON FUNCTION ST_Line_Substring(geometry , float , float ) IS 'args: a_linestring, startfraction, endfraction - Return a linestring being a substring of the input one starting and ending at the given fractions of total 2d length. Second and third arguments are float8 values between 0 and 1.';
+COMMENT ON FUNCTION ST_LineSubstring(geometry , float , float ) IS 'args: a_linestring, startfraction, endfraction - Return a linestring being a substring of the input one starting and ending at the given fractions of total 2d length. Second and third arguments are float8 values between 0 and 1.';
 			
 COMMENT ON FUNCTION ST_LocateAlong(geometry , float , float ) IS 'args: ageom_with_measure, a_measure, offset - Return a derived geometry collection value with elements that match the specified measure. Polygonal elements are not supported.';
 			
@@ -635,9 +645,9 @@ COMMENT ON FUNCTION Box2D(geometry ) IS 'args: geomA - Returns a BOX2D represent
 			
 COMMENT ON FUNCTION Box3D(geometry ) IS 'args: geomA - Returns a BOX3D representing the maximum extents of the geometry.';
 			
-COMMENT ON FUNCTION ST_Estimated_Extent(text , text , text ) IS 'args: schema_name, table_name, geocolumn_name - Return the estimated extent of the given spatial table. The estimated is taken from the geometry columns statistics. The current schema will be used if not specified.';
+COMMENT ON FUNCTION ST_EstimatedExtent(text , text , text ) IS 'args: schema_name, table_name, geocolumn_name - Return the estimated extent of the given spatial table. The estimated is taken from the geometry columns statistics. The current schema will be used if not specified.';
 			
-COMMENT ON FUNCTION ST_Estimated_Extent(text , text ) IS 'args: table_name, geocolumn_name - Return the estimated extent of the given spatial table. The estimated is taken from the geometry columns statistics. The current schema will be used if not specified.';
+COMMENT ON FUNCTION ST_EstimatedExtent(text , text ) IS 'args: table_name, geocolumn_name - Return the estimated extent of the given spatial table. The estimated is taken from the geometry columns statistics. The current schema will be used if not specified.';
 			
 COMMENT ON FUNCTION ST_Expand(geometry , float) IS 'args: g1, units_to_expand - Returns bounding box expanded in all directions from the bounding box of the input geometry. Uses double-precision';
 			
@@ -649,7 +659,7 @@ COMMENT ON AGGREGATE ST_Extent(geometry) IS 'args: geomfield - an aggregate func
 			
 COMMENT ON AGGREGATE ST_3DExtent(geometry) IS 'args: geomfield - an aggregate function that returns the box3D bounding box that bounds rows of geometries.';
 			
-COMMENT ON FUNCTION Find_SRID(varchar , varchar , varchar ) IS 'args: a_schema_name, a_table_name, a_geomfield_name - The syntax is find_srid(<db/schema>, <table>, <column>) and the function returns the integer SRID of the specified column by searching through the GEOMETRY_COLUMNS table.';
+COMMENT ON FUNCTION Find_SRID(varchar , varchar , varchar ) IS 'args: a_schema_name, a_table_name, a_geomfield_name - The syntax is find_srid(a_db_schema, a_table, a_column) and the function returns the integer SRID of the specified column by searching through the GEOMETRY_COLUMNS table.';
 			
 COMMENT ON FUNCTION ST_Mem_Size(geometry ) IS 'args: geomA - Returns the amount of space (in bytes) the geometry takes.';
 			

@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: shp2pgsql-cli.c 10799 2012-12-05 10:38:13Z strk $
+ * $Id: shp2pgsql-cli.c 11294 2013-04-13 18:26:44Z mcayland $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://www.postgis.org
@@ -285,12 +285,20 @@ main (int argc, char **argv)
 	{
 		char *shp_file = strdup(config->shp_file);
 		char *ptr;
+		
+		/* Remove the extension, if present */
 		for ( ptr = shp_file + strlen(shp_file); ptr > shp_file; ptr-- )
 		{
 			if ( *ptr == '.' )
 			{
 				*ptr = '\0';
+				break;
 			}
+		}
+
+		/* The remaining non-path section is the table name */
+		for ( ptr = shp_file + strlen(shp_file); ptr > shp_file; ptr-- )
+		{
 			if ( *ptr == '/' || *ptr == '\\' )
 			{
 				ptr++;

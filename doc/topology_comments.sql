@@ -37,7 +37,7 @@ COMMENT ON FUNCTION topology.ST_CreateTopoGeo(varchar , geometry ) IS 'args: ato
 			
 COMMENT ON FUNCTION topology.TopoGeo_AddPoint(varchar , geometry , float8 ) IS 'args: toponame, apoint, tolerance - Adds a point to an existing topology using a tolerance and possibly splitting an existing edge.';
 			
-COMMENT ON FUNCTION topology.TopoGeo_AddLineString(varchar , geometry , float8 ) IS 'args: toponame, aline, tolerance - Adds a linestring to an existing topology using a tolerance and possibly splitting existing edges/faces.';
+COMMENT ON FUNCTION topology.TopoGeo_AddLineString(varchar , geometry , float8 ) IS 'args: toponame, aline, tolerance - Adds a linestring to an existing topology using a tolerance and possibly splitting existing edges/faces. Returns edge identifiers';
 			
 COMMENT ON FUNCTION topology.TopoGeo_AddPolygon(varchar , geometry , float8 ) IS 'args: atopology, apoly, atolerance - Adds a polygon to an existing topology using a tolerance and possibly splitting existing edges/faces.';
 			
@@ -79,7 +79,7 @@ COMMENT ON FUNCTION topology.GetTopologyID(varchar) IS 'args: toponame - Returns
 			
 COMMENT ON FUNCTION topology.GetTopologyName(integer) IS 'args: topology_id - Returns the name of a topology (schema) given the id of the topology.';
 			
-COMMENT ON FUNCTION topology.ST_GetFaceEdges(varchar , integer ) IS 'args: atopology, aface - Returns a set of ordered edges that bound aface includes the sequence order.';
+COMMENT ON FUNCTION topology.ST_GetFaceEdges(varchar , integer ) IS 'args: atopology, aface - Returns a set of ordered edges that bound aface.';
 			
 COMMENT ON FUNCTION topology.ST_GetFaceGeometry(varchar , integer ) IS 'args: atopology, aface - Returns the polygon in the given topology with the specified face id.';
 			
@@ -95,13 +95,19 @@ COMMENT ON FUNCTION topology.AddEdge(varchar , geometry ) IS 'args: toponame, al
 			
 COMMENT ON FUNCTION topology.AddFace(varchar , geometry , boolean ) IS 'args: toponame, apolygon, force_new=false - Registers a face primitive to a topology and get its identifier.';
 			
+COMMENT ON FUNCTION topology.ST_Simplify(TopoGeometry, float) IS 'args: geomA, tolerance - Returns a "simplified" geometry version of the given TopoGeometry using the Douglas-Peucker algorithm.';
+			
 COMMENT ON FUNCTION topology.CreateTopoGeom(varchar , integer , integer, topoelementarray) IS 'args: toponame, tg_type, layer_id, tg_objs - Creates a new topo geometry object from topo element array - tg_type: 1:[multi]point, 2:[multi]line, 3:[multi]poly, 4:collection';
 			
 COMMENT ON FUNCTION topology.CreateTopoGeom(varchar , integer , integer) IS 'args: toponame, tg_type, layer_id - Creates a new topo geometry object from topo element array - tg_type: 1:[multi]point, 2:[multi]line, 3:[multi]poly, 4:collection';
 			
-COMMENT ON FUNCTION topology.toTopoGeom(geometry , varchar , integer, float8) IS 'args: geom, toponame, layer_id, tolerance - Creates a new topo geometry from a simple geometry';
+COMMENT ON FUNCTION topology.toTopoGeom(geometry , varchar , integer, float8) IS 'args: geom, toponame, layer_id, tolerance - Converts a simple Geometry into a topo geometry';
+			
+COMMENT ON FUNCTION topology.toTopoGeom(geometry , topogeometry , float8) IS 'args: geom, topogeom, tolerance - Converts a simple Geometry into a topo geometry';
 			
 COMMENT ON AGGREGATE topology.TopoElementArray_Agg(topoelement) IS 'args: tefield - Returns a topoelementarray for a set of element_id, type arrays (topoelements)';
+			
+COMMENT ON FUNCTION topology.clearTopoGeom(topogeometry ) IS 'args: topogeom - Clears the content of a topo geometry';
 			
 COMMENT ON FUNCTION topology.GetTopoGeomElementArray(varchar , integer , integer) IS 'args: toponame, layer_id, tg_id - Returns a topoelementarray (an array of topoelements) containing the topological elements and type of the given TopoGeometry (primitive elements)';
 			
@@ -126,4 +132,6 @@ COMMENT ON FUNCTION topology.AsGML(topogeometry , text , integer , integer , reg
 COMMENT ON FUNCTION topology.AsGML(topogeometry , text , integer , integer , regclass , text ) IS 'args: tg, nsprefix_in, precision, options, visitedTable, idprefix - Returns the GML representation of a topogeometry.';
 			
 COMMENT ON FUNCTION topology.AsGML(topogeometry , text , integer , integer , regclass , text , int ) IS 'args: tg, nsprefix_in, precision, options, visitedTable, idprefix, gmlversion - Returns the GML representation of a topogeometry.';
+			
+COMMENT ON FUNCTION topology.AsTopoJSON(topogeometry , regclass ) IS 'args: tg, edgeMapTable - Returns the TopoJSON representation of a topogeometry.';
 			

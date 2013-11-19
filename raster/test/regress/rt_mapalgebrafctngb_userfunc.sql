@@ -1,3 +1,29 @@
+--
+-- A user callback function that nullifies all cells in the resulting raster.
+--
+CREATE OR REPLACE FUNCTION ST_Nullage(matrix float[][], nodatamode text, VARIADIC args text[])
+    RETURNS float AS
+    $$
+    BEGIN
+        RETURN NULL;
+    END;
+    $$
+    LANGUAGE 'plpgsql' IMMUTABLE;
+
+
+--
+--Test rasters
+--
+CREATE OR REPLACE FUNCTION ST_TestRasterNgb(h integer, w integer, val float8) 
+    RETURNS raster AS 
+    $$
+    DECLARE
+    BEGIN
+        RETURN ST_AddBand(ST_MakeEmptyRaster(h, w, 0, 0, 1, 1, 0, 0, 0), '32BF', val, -1);
+    END;
+    $$
+    LANGUAGE 'plpgsql';
+
 -- test st_max4ma, uniform values
 SELECT
   ST_Value(rast, 2, 2) = 1,
@@ -107,17 +133,17 @@ SELECT
 -- test st_slope, corner spike
 SELECT
   ST_Value(rast, 2, 2) = 1,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Slope(rast, 1, NULL), 2, 2
-  ))*100000) = 5784902
+  )*100000) = 5784902
   FROM ST_SetValue(ST_TestRasterNgb(3, 3, 1), 1, 1, 10) AS rast;
 
 -- test st_slope, corner droop
 SELECT
   ST_Value(rast, 2, 2) = 10,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Slope(rast, 1, NULL), 2, 2
-  ))*100000) = 5784902
+  )*100000) = 5784902
   FROM ST_SetValue(ST_TestRasterNgb(3, 3, 10), 1, 1, 1) AS rast;
 
 -- test st_aspect, flat plane
@@ -131,47 +157,47 @@ SELECT
 -- test st_aspect, North
 SELECT
   ST_Value(rast, 2, 2) = 1,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Aspect(rast, 1, NULL), 2, 2
-  ))*10000) = 0
+  )*10000) = 0
   FROM ST_SetValue(ST_TestRasterNgb(3, 3, 1), 2, 1, 0) AS rast;
 
 -- test st_aspect, South
 SELECT
   ST_Value(rast, 2, 2) = 1,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Aspect(rast, 1, NULL), 2, 2
-  ))*10000) = 1800000
+  )*10000) = 1800000
   FROM ST_SetValue(ST_TestRasterNgb(3, 3, 1), 2, 3, 0) AS rast;
 
 -- test st_aspect, East
 SELECT
   ST_Value(rast, 2, 2) = 1,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Aspect(rast, 1, NULL), 2, 2
-  ))*10000) = 900000
-  FROM ST_SetValue(ST_TestRasterNgb(3, 3, 1), 3, 2, 0) AS rast;
+  )*10000) = 900000
+  FROM ST_SetValue(ST_SetScale(ST_TestRasterNgb(3, 3, 1), 1, -1), 3, 2, 0) AS rast;
 
 -- test st_aspect, West
 SELECT
   ST_Value(rast, 2, 2) = 1,
-  round(degrees(ST_Value(
+  round(ST_Value(
     ST_Aspect(rast, 1, NULL), 2, 2
-  ))*10000) = 2700000
-  FROM ST_SetValue(ST_TestRasterNgb(3, 3, 1), 1, 2, 0) AS rast;
+  )*10000) = 2700000
+  FROM ST_SetValue(ST_SetScale(ST_TestRasterNgb(3, 3, 1), 1, -1), 1, 2, 0) AS rast;
 
 -- test st_hillshade, flat plane
 SELECT
   ST_Value(rast, 2, 2) = 1,
   round(ST_Value(
-    ST_Hillshade(rast, 1, NULL, 0.0, pi()/4.0, 255), 2, 2
+    ST_Hillshade(rast, 1, NULL, 0.0, 45., 255), 2, 2
   )*10000) = 1803122
   FROM ST_TestRasterNgb(3, 3, 1) AS rast;
 
 -- test st_hillshade, known set from: http://webhelp.esri.com/arcgiSDEsktop/9.3/index.cfm?TopicName=How%20Hillshade%20works
 SELECT
   round(ST_Value(
-    ST_Hillshade(rast, 1, NULL, radians(315.0), pi()/4.0, 255, 1.0), 2, 2
+    ST_Hillshade(rast, 1, NULL, 315.0, 45., 255, 1.0), 2, 2
   )*10000) = 1540287
   FROM ST_SetValue(
     ST_SetValue(
@@ -196,7 +222,7 @@ SELECT
 -- test st_hillshade, defaults on known set from: http://webhelp.esri.com/arcgiSDEsktop/9.3/index.cfm?TopicName=How%20Hillshade%20works  
 SELECT
   round(ST_Value(
-    ST_Hillshade(rast, 1, NULL, radians(315.0), pi()/4.0), 2, 2
+    ST_Hillshade(rast, 1, NULL, 315.0, 45.), 2, 2
   )*10000) = 1540287
   FROM ST_SetValue(
     ST_SetValue(
@@ -269,3 +295,6 @@ SELECT
       ), 2, 3, 8
     ), 3, 3, 9
   ) AS rast;
+
+DROP FUNCTION ST_Nullage(matrix float[][], nodatamode text, VARIADIC args text[]);
+DROP FUNCTION ST_TestRasterNgb(h integer, w integer, val float8);

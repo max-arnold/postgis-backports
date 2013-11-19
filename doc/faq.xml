@@ -3,6 +3,16 @@
   <title>PostGIS Frequently Asked Questions</title>
 
   <qandaset>
+  	<qandaentry id="faq_where_tutorials">
+      <question>
+        <para>Where can I find tutorials, guides and workshops on working with PostGIS</para>
+      </question>
+
+      <answer>
+        <para>OpenGeo has a step by step tutorial guide workshop <ulink url="http://workshops.opengeo.org/postgis-intro/">Introduction to PostGIS</ulink>.  It includes packaged data as well as intro to working with OpenGeo Suite. It is probably the best tutorial on PostGIS.</para>
+        <para>BostonGIS also has a <ulink url="http://www.bostongis.com/PrinterFriendly.aspx?content_name=postgis_tut01">PostGIS almost idiot's guide on getting started</ulink>. That one is more focused on the windows user.</para>
+      </answer>
+    </qandaentry>
      <qandaentry id="legacy_faq">
       <question>
         <para>My applications and desktop tools worked with PostGIS 1.5,but they don't work with PostGIS 2.0.  How do I fix this?</para>
@@ -40,6 +50,7 @@
          <para>If you are unfortunate to be stuck with compiled code you can't change that has the old gist_geometry_ops hard-coded, then you can create the old class using the <filename>legacy_gist.sql</filename> packaged in PostGIS 2.0.2+. However if you use this fix, you are advised to at a later point drop the index and recreate it without the operator class.  This will save you grief in the future when you need to upgrade again.</para>
       </answer>
     </qandaentry>
+
     <qandaentry>
       <question>
         <para>I'm running PostgreSQL 9.0 and I can no longer read/view geometries in OpenJump, Safe FME, and some other tools?</para>
@@ -381,7 +392,7 @@ WHERE ST_DWithin(geocolumn, 'POINT(1000 1000)', 100.0);</programlisting>
       </answer>
     </qandaentry>
 
-	<qandaentry>
+	<qandaentry id="license_faq">
       <question>
         <para>I am releasing software that uses PostGIS, does that mean my software has to be licensed using the GPL like PostGIS? Will I have to publish all my code if I use PostGIS?</para>
       </question>
