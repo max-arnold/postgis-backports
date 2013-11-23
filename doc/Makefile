@@ -25,15 +25,15 @@ translations = it_IT pt_BR
 
 POSTGIS_MAJOR_VERSION=2
 POSTGIS_MINOR_VERSION=1
-POSTGIS_MICRO_VERSION=0
+POSTGIS_MICRO_VERSION=1
 
-INSTALL=/usr/bin/install -c
+INSTALL=/opt/local/bin/ginstall -c
 INSTALL_DATA=${INSTALL} -m 644
 
-XSLTPROC=/usr/bin/xsltproc
-XSLBASE=/usr/share/xml/docbook/stylesheet/nwalsh
-XMLLINT=/usr/bin/xmllint
-PERL=/usr/bin/perl
+XSLTPROC=/opt/local/bin/xsltproc
+XSLBASE=/opt/local/share/xsl/docbook-xsl
+XMLLINT=/opt/local/bin/xmllint
+PERL=/opt/local/bin/perl
 
 # To allow network access use:
 #
@@ -63,10 +63,10 @@ HTML_DOCBOOK_XSL=$(XSLBASE)/html/docbook.xsl
 CHUNK_HTML_DOCBOOK_XSL=$(XSLBASE)/html/chunk.xsl
 
 # DBLatex's dblatex script for PDF generation from DocBook
-DBLATEX=/usr/bin/dblatex
+DBLATEX=/opt/local/bin/dblatex
 
 # Imagemagick's convert utility program for generated images used in the documentation
-IMAGEMAGICK=/usr/bin/convert
+IMAGEMAGICK=/opt/local/bin/convert
 
 # Gettext for translated documentation
 MSGMERGE=msgmerge
@@ -78,9 +78,9 @@ XML2POT=xml2pot
 DBTOEPUB=dbtoepub
 
 # Directories for postgresql subdirectories
-PGSQL_DOCDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/doc/postgresql
-PGSQL_MANDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/man
-PGSQL_SHAREDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/postgresql
+PGSQL_DOCDIR=/usr/local/pgsql/9.2/share/doc
+PGSQL_MANDIR=/usr/local/pgsql/9.2/share/man
+PGSQL_SHAREDIR=/usr/local/pgsql/9.2/share
 
 # If XSLTPROC or XSLBASE were not found during configure, we cannot
 # build the documentation

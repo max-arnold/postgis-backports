@@ -1,7 +1,7 @@
 
 COMMENT ON FUNCTION Drop_Indexes_Generate_Script(text ) IS 'args: param_schema=tiger_data - Generates a script that drops all non-primary key and non-unique indexes on tiger schema and user specified schema. Defaults schema to tiger_data if no schema is specified.';
 			
-COMMENT ON FUNCTION Drop_State_Tables_Generate_Script(text , text ) IS 'args: param_state, param_schema=tiger_data - Generates a script that drops all tables in the specified schema that start with county_all, state_all or stae code followed by county or state.';
+COMMENT ON FUNCTION Drop_Nation_Tables_Generate_Script(text ) IS 'args: param_schema=tiger_data - Generates a script that drops all tables in the specified schema that start with county_all, state_all or stae code followed by county or state.';
 			
 COMMENT ON FUNCTION Drop_State_Tables_Generate_Script(text , text ) IS 'args: param_state, param_schema=tiger_data - Generates a script that drops all tables in the specified schema that are prefixed with the state abbreviation. Defaults schema to tiger_data if no schema is specified.';
 			

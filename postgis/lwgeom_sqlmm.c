@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_sqlmm.c 10671 2012-11-14 21:25:52Z pramsey $
+ * $Id: lwgeom_sqlmm.c 12083 2013-11-04 23:17:11Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(LWGEOM_curve_segmentize);
 Datum LWGEOM_curve_segmentize(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *geom = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-	uint32 perQuad = PG_GETARG_INT32(1);
+	int32 perQuad = PG_GETARG_INT32(1);
 	GSERIALIZED *ret;
 	LWGEOM *igeom = NULL, *ogeom = NULL;
 
