@@ -296,7 +296,7 @@ install-arch: build-arch
 check: build-arch-stamp
 #   Run unit tests (against the newest Postgres version only, for
 #   now).
-	echo "LD_PRELOAD = '$(CURDIR)/liblwgeom/.libs/liblwgeom-2.1.0.so'" \
+	echo "LD_PRELOAD = '$(CURDIR)/liblwgeom/.libs/liblwgeom-2.1.1.so'" \
 		> $(CURDIR)/postgis-check-env.tmp
 	(set -e; \
 		test -z '$(CHECK)' || \

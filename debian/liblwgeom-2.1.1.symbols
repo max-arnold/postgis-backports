@@ -1,4 +1,4 @@
-liblwgeom-2.1.0.so liblwgeom-2.1.0 #MINVER#
+liblwgeom-2.1.1.so liblwgeom-2.1.1 #MINVER#
  GEOS2LWGEOM@Base 2.0.0
  LWGEOM2GEOS@Base 2.0.0
  LWGEOM_GEOS_buildArea@Base 2.0.0
