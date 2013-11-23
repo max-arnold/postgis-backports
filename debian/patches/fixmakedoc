@@ -14,20 +14,3 @@ index 9264d46..0f026e3 100644
  
  ifeq ($(XSLTPROC),)
  garden: requirements_not_met_xsltproc
-diff --git a/doc/Makefile b/doc/Makefile
-index 3f20336..e08334b 100644
---- a/doc/Makefile
-+++ b/doc/Makefile
-@@ -78,9 +78,9 @@ XML2POT=xml2pot
- DBTOEPUB=dbtoepub
- 
- # Directories for postgresql subdirectories
--PGSQL_DOCDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/doc/postgresql
--PGSQL_MANDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/man
--PGSQL_SHAREDIR=/var/lib/jenkins/workspace/pg/rel/pg9.2w64/share/postgresql
-+PGSQL_DOCDIR=/usr/share/doc/postgresql-9.3
-+PGSQL_MANDIR=/usr/share/postgresql/9.3/man
-+PGSQL_SHAREDIR=/usr/share/postgresql/9.3
- 
- # If XSLTPROC or XSLBASE were not found during configure, we cannot
- # build the documentation
