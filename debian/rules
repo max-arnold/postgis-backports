@@ -60,19 +60,19 @@ DEB_BUILD_ARCH      ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 # Determine JAVA_HOME to use. Depends on which Build-Depends-Indep
 # variant has been used.
-JAVA_HOME = /usr/lib/jvm/java-8-openjdk-$(DEB_BUILD_ARCH)
-ifeq ("$(wildcard $(JAVA_HOME))","")
-  JAVA_HOME = /usr/lib/jvm/java-7-openjdk-$(DEB_BUILD_ARCH)
-  ifeq ("$(wildcard $(JAVA_HOME))","")
-    JAVA_HOME = /usr/lib/jvm/java-6-openjdk-$(DEB_BUILD_ARCH)
-    ifeq ("$(wildcard $(JAVA_HOME))","")
-      JAVA_HOME =
-    endif
-  endif
-endif
+#JAVA_HOME = /usr/lib/jvm/java-8-openjdk-$(DEB_BUILD_ARCH)
+#ifeq ("$(wildcard $(JAVA_HOME))","")
+#  JAVA_HOME = /usr/lib/jvm/java-7-openjdk-$(DEB_BUILD_ARCH)
+#  ifeq ("$(wildcard $(JAVA_HOME))","")
+#    JAVA_HOME = /usr/lib/jvm/java-6-openjdk-$(DEB_BUILD_ARCH)
+#    ifeq ("$(wildcard $(JAVA_HOME))","")
+#      JAVA_HOME =
+#    endif
+#  endif
+#endif
 
 # Use maven in offline mode and with the local Debian repo
-MVN = JAVA_HOME=$(JAVA_HOME) mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
+#MVN = JAVA_HOME=$(JAVA_HOME) mvn --offline -Dmaven.repo.local=/usr/share/maven-repo
 
 MAJOR_VERSION = $(shell grep POSTGIS_MAJOR_VERSION Version.config|cut -d= -f2)
 MINOR_VERSION = $(shell grep POSTGIS_MINOR_VERSION Version.config|cut -d= -f2)
@@ -121,11 +121,11 @@ build-arch-stamp: configuration-stamp
 build-indep: build-indep-stamp
 build-indep-stamp: configuration-stamp
 #	Re-check JAVA_HOME
-	@[ -n "$(JAVA_HOME)" ] || (echo "ERROR: didn't find a Java JDK"; exit 2)
-	@[ -x "$(JAVA_HOME)/bin/javac" ] || (echo "ERROR: no javac in JAVA_HOME=$(JAVA_HOME)"; exit 2)
+#	@[ -n "$(JAVA_HOME)" ] || (echo "ERROR: didn't find a Java JDK"; exit 2)
+#	@[ -x "$(JAVA_HOME)/bin/javac" ] || (echo "ERROR: no javac in JAVA_HOME=$(JAVA_HOME)"; exit 2)
 
 #	PostGIS JDBC (with debug support)
-	cd $(CURDIR)/java/jdbc && $(MVN) package
+#	cd $(CURDIR)/java/jdbc && $(MVN) package
 
 #	Let PostGIS create a perl script from postgis_restore.pl.in
 	$(MAKE) -C utils
@@ -240,8 +240,8 @@ install-indep: build-indep
 
 #	Link the resulting JAR file, so it's available via it's old
 #	name. (Even if postgis-jdbc.jar might be more appropriate.)
-	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
-		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
+#	ln -sf postgis-jdbc-$(POSTGIS_VERSION).jar \
+#		$(CURDIR)/debian/libpostgis-java/usr/share/java/postgis.jar
 
 install-arch: build-arch
 	dh_testdir
