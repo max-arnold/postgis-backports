@@ -76,7 +76,7 @@ $ENV{"LC_ALL"} = "C";
 $ENV{"LANG"} = "C";
 
 # Add locale info to the psql options
-my $PGOPTIONS = $ENV{"PGOPTIONS"} . " -c lc_messages=C";
+my $PGOPTIONS = $ENV{"PGOPTIONS"} . " -c lc_messages=C -c client_min_messages=NOTICE";
 $ENV{"PGOPTIONS"} = $PGOPTIONS;
 
 # Bring the path info in
@@ -553,7 +553,7 @@ sub run_simple_test
 	@lines = grep(!/^(INSERT|DELETE|UPDATE|SELECT)/, @lines);
 	@lines = grep(!/^(CONTEXT|RESET|ANALYZE)/, @lines);
 	@lines = grep(!/^(DROP|CREATE|VACUUM)/, @lines);
-	@lines = grep(!/^(SET|TRUNCATE)/, @lines);
+	@lines = grep(!/^(LOG|SET|TRUNCATE)/, @lines);
 	@lines = grep(!/^LINE \d/, @lines);
 	@lines = grep(!/^\s+$/, @lines);
 

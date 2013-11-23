@@ -12,8 +12,19 @@
 -- Copyright (C) 2011-2013 Regents of the University of California
 --   <bkpark@ucdavis.edu>
 --
--- This is free software; you can redistribute and/or modify it under
--- the terms of the GNU General Public Licence. See the COPYING file.
+-- This program is free software; you can redistribute it and/or
+-- modify it under the terms of the GNU General Public License
+-- as published by the Free Software Foundation; either version 2
+-- of the License, or (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, write to the Free Software Foundation,
+-- Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 --
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 --
@@ -5513,6 +5524,11 @@ CREATE OR REPLACE FUNCTION raster_geometry_contain(raster, geometry)
     AS 'select $1::geometry ~ $2'
     LANGUAGE 'sql' IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION raster_contained_by_geometry(raster, geometry)
+    RETURNS bool
+    AS 'select $1::geometry @ $2'
+    LANGUAGE 'sql' IMMUTABLE STRICT;
+
 CREATE OR REPLACE FUNCTION raster_geometry_overlap(raster, geometry)
     RETURNS bool
     AS 'select $1::geometry && $2'
@@ -5522,6 +5538,11 @@ CREATE OR REPLACE FUNCTION raster_geometry_overlap(raster, geometry)
 CREATE OR REPLACE FUNCTION geometry_raster_contain(geometry, raster)
     RETURNS bool
     AS 'select $1 ~ $2::geometry'
+    LANGUAGE 'sql' IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION geometry_contained_by_raster(geometry, raster)
+    RETURNS bool
+    AS 'select $1 @ $2::geometry'
     LANGUAGE 'sql' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION geometry_raster_overlap(geometry, raster)
@@ -5611,7 +5632,13 @@ CREATE OPERATOR ~ (
     COMMUTATOR = '@',
     RESTRICT = contsel, JOIN = contjoinsel
     );
-    
+
+CREATE OPERATOR @ (
+    LEFTARG = raster, RIGHTARG = geometry, PROCEDURE = raster_contained_by_geometry,
+    COMMUTATOR = '~',
+    RESTRICT = contsel, JOIN = contjoinsel
+    );
+
 CREATE OPERATOR && (
     LEFTARG = raster, RIGHTARG = geometry, PROCEDURE = raster_geometry_overlap,
     COMMUTATOR = '&&',
@@ -5624,7 +5651,13 @@ CREATE OPERATOR ~ (
     COMMUTATOR = '@',
     RESTRICT = contsel, JOIN = contjoinsel
     );
-    
+
+CREATE OPERATOR @ (
+    LEFTARG = geometry, RIGHTARG = raster, PROCEDURE = geometry_contained_by_raster,
+    COMMUTATOR = '~',
+    RESTRICT = contsel, JOIN = contjoinsel
+    );
+
 CREATE OPERATOR && (
     LEFTARG = geometry, RIGHTARG = raster, PROCEDURE = geometry_raster_overlap,
     COMMUTATOR = '&&',
@@ -8006,7 +8039,7 @@ CREATE OR REPLACE VIEW raster_columns AS
 		AND a.atttypid = t.oid
 		AND a.attrelid = c.oid
 		AND c.relnamespace = n.oid
-		AND (c.relkind = 'r'::"char" OR c.relkind = 'v'::"char")
+		AND c.relkind = ANY(ARRAY['r'::char, 'v'::char, 'm'::char, 'f'::char])
 		AND NOT pg_is_other_temp_schema(c.relnamespace);
 
 ------------------------------------------------------------------------------
@@ -8106,7 +8139,7 @@ CREATE OR REPLACE VIEW raster_overviews AS
 		AND a.atttypid = t.oid
 		AND a.attrelid = c.oid
 		AND c.relnamespace = n.oid
-		AND (c.relkind = 'r'::"char" OR c.relkind = 'v'::"char")
+		AND c.relkind = ANY(ARRAY['r'::char, 'v'::char, 'm'::char, 'f'::char])
 		AND s.connamespace = n.oid
 		AND s.conrelid = c.oid
 		AND s.consrc LIKE '%_overview_constraint(%'

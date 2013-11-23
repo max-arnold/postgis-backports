@@ -1,6 +1,6 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <!-- ********************************************************************
-	 $Id: postgis_aggs_mm.xml.xsl 11716 2013-08-02 01:30:11Z dustymugs $
+	 $Id: postgis_aggs_mm.xml.xsl 11972 2013-09-23 18:25:33Z robe $
 	 ********************************************************************
 	 Copyright 2010, Regina Obe
 	 License: BSD
@@ -459,7 +459,7 @@
 				
 				<note><para>More Topology performance Improvements.  Please refer to <xref linkend="Topology" /> for more details.</para></note>
 				<note><para>Bug fixes (particularly with handling of out-of-band rasters), many new functions (often shortening code you have to write to accomplish a common task) and massive speed improvements to raster functionality. Refer to <xref linkend="RT_reference" /> for more details. </para></note>
-				<note><para>Tiger Geocoder upgraded to work with TIGER 2012 census data.  <varname>geocode_settings</varname> added for debugging and tweaking rating preferences, loader made less greedy, now only downloads tables to be loaded.
+				<note><para>Tiger Geocoder upgraded to work with TIGER 2012 census data in 2.1.0 and TIGER 2013 in 2.1.1.  <varname>geocode_settings</varname> added for debugging and tweaking rating preferences, loader made less greedy, now only downloads tables to be loaded.
 					Please refer to <xref linkend="Tiger_Geocoder" /> for more details.</para></note>
 					
 				<note><para>Raster bands can only reference the first 256 bands of out-db rasters.</para></note>
