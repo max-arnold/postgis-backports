@@ -13,7 +13,7 @@ Last-Update: 2013-07-22
  # PGXS information
 -PG_CONFIG = /var/lib/jenkins/workspace/pg/rel/pg9.2w64/bin/pg_config 
 -PGXS := /var/lib/jenkins/workspace/pg/rel/pg9.2w64/lib/postgresql/pgxs/src/makefiles/pgxs.mk
-+PG_CONFIG = /usr/lib/postgresql/9.3/bin/pg_config
++PG_CONFIG = /usr/lib/postgresql/9.3/bin/pg_config 
 +PGXS := /usr/lib/postgresql/9.3/lib/pgxs/src/makefiles/pgxs.mk
  include $(PGXS)
  
