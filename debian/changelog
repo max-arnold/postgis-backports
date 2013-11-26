@@ -1,3 +1,9 @@
+postgis (2.1.1-1.pgdg12.4+3) precise-pgdg; urgency=low
+
+  * Remove obsolete patch
+
+ -- Max Arnold <arnold.maxim@gmail.com>  Tue, 26 Nov 2013 20:57:32 +0700
+
 postgis (2.1.1-1.pgdg12.4+2) precise-pgdg; urgency=low
 
   * Backport 2.1.1 to Ubuntu Precise
