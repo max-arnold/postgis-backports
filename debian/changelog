@@ -1,3 +1,9 @@
+postgis (2.1.1-1.pgdg12.4+4) precise-pgdg; urgency=low
+
+  * Bump version to rebuild postgis against postrgres 9.3.2
+
+ -- Max Arnold <arnold.maxim@gmail.com>  Tue, 06 Dec 2013 16:02:32 +0700
+
 postgis (2.1.1-1.pgdg12.4+3) precise-pgdg; urgency=low
 
   * Remove obsolete patch
