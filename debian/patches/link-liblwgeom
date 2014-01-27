@@ -24,7 +24,7 @@ Last-Update: 2013-04-23
  ifeq (@SFCGAL@,sfcgal)
 --- a/raster/rt_pg/Makefile.in
 +++ b/raster/rt_pg/Makefile.in
-@@ -27,14 +27,7 @@
+@@ -38,14 +38,7 @@
  OBJS=rt_pg.o
  
  # Libraries to link into the module (proj, geos)
@@ -42,7 +42,7 @@ Last-Update: 2013-04-23
  LIBPGCOMMON_LDFLAGS=../../libpgcommon/libpgcommon.a
 --- a/raster/loader/Makefile.in
 +++ b/raster/loader/Makefile.in
-@@ -26,7 +26,7 @@
+@@ -37,7 +37,7 @@
  
  RT_CORE=../rt_core
  

@@ -1,0 +1,23 @@
+Description: Apply proposed patch from upstream bug #2543
+ Not quite how important upstream issue #2543 is in the wild, but the
+ proposed fix seems save in any case. On MIPS, I occasionally see very
+ high selectivity values, with indicates a bug. For now, let's just
+ cap the selectivity at 1.0.
+Author: Paul Ramsey <pramsey@cleverelephant.ca>
+Bug: http://trac.osgeo.org/postgis/ticket/2543
+Origin: upstream, http://trac.osgeo.org/postgis/attachment/ticket/2543/joinsel.patch
+Last-Update: 2013-11-13
+
+--- a/postgis/gserialized_estimate.c
++++ b/postgis/gserialized_estimate.c
+@@ -1075,6 +1075,10 @@
+ 	 */
+ 	selectivity = val / ntuples_max;
+ 	
++	/* Guard against over-estimates :) */ 
++	if ( selectivity > 1.0 )  
++		selectivity = 1.0; 	
++
+ 	return selectivity;
+ }
+ 

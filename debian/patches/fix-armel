@@ -1,0 +1,163 @@
+Description: Fix FTBSF os armel, at least
+ All point_in_{polygon,multipolygon,polygon_rtree,multipolygon_rtree}
+ functions return an int ranging from -1 to +1. This patch properly
+ preserves that type and prevents the bogus conversion to bool. Thus
+ correcting the return value and fixing multiple tests on armel.
+Author: Markus Wanner <markus@bluegap.ch>
+Last-Update: 2014-01-09
+
+--- a/postgis/lwgeom_geos.c
++++ b/postgis/lwgeom_geos.c
+@@ -1990,6 +1990,7 @@
+ 	LWPOINT *point;
+ 	RTREE_POLY_CACHE *poly_cache;
+ 	bool result;
++	int pip_result;
+ 	PrepGeomCache *prep_cache;
+ 
+ 	geom1 = (GSERIALIZED *)  PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+@@ -2037,15 +2038,15 @@
+ 
+ 		if ( poly_cache && poly_cache->ringIndices )
+ 		{
+-			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
++			pip_result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
+ 		}
+ 		else if ( type1 == POLYGONTYPE )
+ 		{
+-			result = point_in_polygon((LWPOLY*)lwgeom, point);
++			pip_result = point_in_polygon((LWPOLY*)lwgeom, point);
+ 		}
+ 		else if ( type1 == MULTIPOLYGONTYPE )
+ 		{
+-			result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
++			pip_result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
+ 		}
+ 		else
+ 		{
+@@ -2057,7 +2058,7 @@
+ 		lwpoint_free(point);
+ 		PG_FREE_IF_COPY(geom1, 0);
+ 		PG_FREE_IF_COPY(geom2, 1);
+-		if ( result == 1 ) /* completely inside */
++		if ( pip_result == 1 ) /* completely inside */
+ 		{
+ 			PG_RETURN_BOOL(TRUE);
+ 		}
+@@ -2213,6 +2214,7 @@
+ 	GSERIALIZED *geom1;
+ 	GSERIALIZED *geom2;
+ 	bool result;
++	int pip_result;
+ 	GBOX box1, box2;
+ 	int type1, type2;
+ 	LWGEOM *lwgeom;
+@@ -2263,15 +2265,15 @@
+ 
+ 		if ( poly_cache && poly_cache->ringIndices )
+ 		{
+-			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
++			pip_result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
+ 		}
+ 		else if ( type1 == POLYGONTYPE )
+ 		{
+-			result = point_in_polygon((LWPOLY*)lwgeom, point);
++			pip_result = point_in_polygon((LWPOLY*)lwgeom, point);
+ 		}
+ 		else if ( type1 == MULTIPOLYGONTYPE )
+ 		{
+-			result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
++			pip_result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
+ 		}
+ 		else
+ 		{
+@@ -2284,7 +2286,7 @@
+ 		lwpoint_free(point);
+ 		PG_FREE_IF_COPY(geom1, 0);
+ 		PG_FREE_IF_COPY(geom2, 1);
+-		if ( result != -1 ) /* not outside */
++		if ( pip_result != -1 ) /* not outside */
+ 		{
+ 			PG_RETURN_BOOL(TRUE);
+ 		}
+@@ -2368,6 +2370,7 @@
+ 	GSERIALIZED *geom2;
+ 	GEOSGeometry *g1, *g2;
+ 	bool result;
++	int pip_result;
+ 	GBOX box1, box2;
+ 	LWGEOM *lwgeom;
+ 	LWPOINT *point;
+@@ -2418,15 +2421,15 @@
+ 
+ 		if ( poly_cache && poly_cache->ringIndices )
+ 		{
+-			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
++			pip_result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
+ 		}
+ 		else if ( type2 == POLYGONTYPE )
+ 		{
+-			result = point_in_polygon((LWPOLY*)lwgeom, point);
++			pip_result = point_in_polygon((LWPOLY*)lwgeom, point);
+ 		}
+ 		else if ( type2 == MULTIPOLYGONTYPE )
+ 		{
+-			result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
++			pip_result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
+ 		}
+ 		else
+ 		{
+@@ -2439,7 +2442,7 @@
+ 		lwpoint_free(point);
+ 		PG_FREE_IF_COPY(geom1, 0);
+ 		PG_FREE_IF_COPY(geom2, 1);
+-		if ( result != -1 ) /* not outside */
++		if ( pip_result != -1 ) /* not outside */
+ 		{
+ 			PG_RETURN_BOOL(TRUE);
+ 		}
+@@ -2493,7 +2496,7 @@
+ 	GSERIALIZED *geom1;
+ 	GSERIALIZED *geom2;
+ 	GEOSGeometry *g1, *g2;
+-	bool result;
++	int result;
+ 	GBOX box1, box2;
+ 
+ 	geom1 = (GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+@@ -2562,6 +2565,7 @@
+ 	GSERIALIZED *geom2;
+ 	GSERIALIZED *serialized_poly;
+ 	bool result;
++	int pip_result;
+ 	GBOX box1, box2;
+ 	int type1, type2, polytype;
+ 	LWPOINT *point;
+@@ -2623,15 +2627,15 @@
+ 
+ 		if ( poly_cache && poly_cache->ringIndices )
+ 		{
+-			result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
++			pip_result = point_in_multipolygon_rtree(poly_cache->ringIndices, poly_cache->polyCount, poly_cache->ringCounts, point);
+ 		}
+ 		else if ( polytype == POLYGONTYPE )
+ 		{
+-			result = point_in_polygon((LWPOLY*)lwgeom, point);
++			pip_result = point_in_polygon((LWPOLY*)lwgeom, point);
+ 		}
+ 		else if ( polytype == MULTIPOLYGONTYPE )
+ 		{
+-			result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
++			pip_result = point_in_multipolygon((LWMPOLY*)lwgeom, point);
+ 		}
+ 		else
+ 		{
+@@ -2644,7 +2648,7 @@
+ 		lwpoint_free(point);
+ 		PG_FREE_IF_COPY(geom1, 0);
+ 		PG_FREE_IF_COPY(geom2, 1);
+-		if ( result != -1 ) /* not outside */
++		if ( pip_result != -1 ) /* not outside */
+ 		{
+ 			PG_RETURN_BOOL(TRUE);
+ 		}

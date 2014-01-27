@@ -5,6 +5,17 @@ Description: Update various files to Debian versions
 Author: Stephen Frost <sfrost@snowman.net>
 Last-Update: 2013-07-22
 
+--- a/postgis/sqldefines.h
++++ b/postgis/sqldefines.h
+@@ -10,7 +10,7 @@
+ #define POSTGIS_GEOS_VERSION 34
+ #define POSTGIS_PROJ_VERSION 48
+ #define POSTGIS_LIB_VERSION '2.1.1'
+-#define POSTGIS_LIBXML2_VERSION 2.9.0
++#define POSTGIS_LIBXML2_VERSION 2.9.1
+ 
+ /*
+  * Define the build date and the version number
 --- a/doc/Makefile.comments
 +++ b/doc/Makefile.comments
 @@ -21,8 +21,8 @@

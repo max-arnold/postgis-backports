@@ -1,28 +1,47 @@
-postgis (2.1.1-1.pgdg12.4+4) precise-pgdg; urgency=low
+postgis (2.1.1-10.pgdg12.4+1) precise-pgdg; urgency=low
 
-  * Bump version to rebuild postgis against postrgres 9.3.2
+  * Backport
 
- -- Max Arnold <arnold.maxim@gmail.com>  Tue, 06 Dec 2013 16:02:32 +0700
+ -- Max Arnold <arnold.maxim@gmail.com>  Mon, 27 Jan 2014 20:24:18 +0700
 
-postgis (2.1.1-1.pgdg12.4+3) precise-pgdg; urgency=low
-
-  * Remove obsolete patch
-
- -- Max Arnold <arnold.maxim@gmail.com>  Tue, 26 Nov 2013 20:57:32 +0700
-
-postgis (2.1.1-1.pgdg12.4+2) precise-pgdg; urgency=low
-
-  * Backport 2.1.1 to Ubuntu Precise
-
- -- Max Arnold <arnold.maxim@gmail.com>  Sat, 23 Nov 2013 13:04:22 +0700
-
-postgis (2.1.0-4.pgdg12.4+1) precise-pgdg; urgency=low
+postgis (2.1.1-3.pgdg12.4+1) precise-pgdg; urgency=low
 
   * Rebuild for precise-pgdg (jenkins-postgis-source-
-    distribution=precise-33, git revision
-    580d6ec8d3b904f31aa317a778077d6a09b96fc2)
+    distribution=precise-38, git revision
+    fcd3fd8fbf6dd5acac1a1746ee4edf0d78b5e52c)
 
- -- apt.postgresql.org autobuilder <myon@debian.org>  Sun, 20 Oct 2013 22:20:38 +0200
+ -- apt.postgresql.org autobuilder <myon@debian.org>  Sat, 18 Jan 2014 19:21:19 +0100
+
+postgis (2.1.1-3) unstable; urgency=low
+
+  * Fix FTBFS on at least powerpc and mips by commenting out a few tests
+    that check against a serialized representation, which is architecture
+    dependent.
+  * Apply (experimental) upstream patch preventing against selectivity
+    estimates bigger than 1.0.
+
+ -- Markus Wanner <markus@bluegap.ch>  Tue, 14 Jan 2014 22:18:56 +0100
+
+postgis (2.1.1-2) unstable; urgency=medium
+
+  * Fix FTBFS on armel, maybe others, with yet another patch.
+  * debian/control: bumped Standard-Versions to 3.9.5, no changes needed.
+
+ -- Markus Wanner <markus@bluegap.ch>  Thu, 09 Jan 2014 20:00:54 +0100
+
+postgis (2.1.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Drop patches upstream-r11979, upstream-r11983, upstream-r11990, and
+    minor-r11979-correction; these are included in this release.
+  * control, rules, liblwgeom-2.1.*.{install,symbols}: adapt to new liblwgeom
+    version.
+  * Adjust patch debian-versions: in doc/Makefile.comments, refer to
+    Postgres 9.3, as that's now default. Set POSTGIS_LIBXML2_VERSION to
+    2.9.1, as currently shipped.
+  * Adjust line numbers in patches honor-build-flags and link-liblwgeom
+
+ -- Markus Wanner <markus@bluegap.ch>  Thu, 12 Dec 2013 20:38:27 +0100
 
 postgis (2.1.0-4) unstable; urgency=low
 

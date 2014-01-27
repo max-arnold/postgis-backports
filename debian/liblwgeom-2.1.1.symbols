@@ -544,6 +544,7 @@ liblwgeom-2.1.1.so liblwgeom-2.1.1 #MINVER#
  ptarray_affine@Base 2.0.0
  ptarray_append_point@Base 2.0.0
  ptarray_append_ptarray@Base 2.0.0
+ ptarray_arc_length_2d@Base 2.1.1
  ptarray_area_sphere@Base 2.0.0
  ptarray_calculate_gbox_cartesian@Base 2.0.0
  ptarray_calculate_gbox_geodetic@Base 2.0.0

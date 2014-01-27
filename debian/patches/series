@@ -6,4 +6,7 @@ link-liblwgeom
 use-debian-maven
 honor-build-flags
 fix-kfreebsd
+fix-armel
+fix-big-endian
 fix-manpage
+joinsel-issue2543

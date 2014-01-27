@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 8), dpkg-dev (>= 1.16.1~), autotools-dev,
  imagemagick, libcunit1-dev, dblatex, libxml2-dev (>= 2.5.0~),
  libgdal-dev (>= 1.10.0~) | libgdal1-dev (>= 1.10.0~),
  postgresql-server-dev-all, postgresql-common (>= 148~), postgresql
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: http://postgis.refractions.net/
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-grass/postgis.git
 Vcs-Git: git://anonscm.debian.org/pkg-grass/postgis.git
@@ -100,10 +100,10 @@ Package: postgresql-9.0-postgis-scripts
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: postgresql-9.0-postgis-2.1
-Replaces: postgresql-9.0-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.0-postgis-2.1-scripts (<< 2.1.1-1~)
-Breaks: postgresql-9.0-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.0-postgis-2.1-scripts (<< 2.1.1-1~)
+Replaces: postgresql-9.0-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.0-postgis-2.1-scripts (<< 2.1.0-4~)
+Breaks: postgresql-9.0-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.0-postgis-2.1-scripts (<< 2.1.0-4~)
 Description: Geographic objects support for PostgreSQL 9.0 -- scripts
  PostGIS adds support for geographic objects to the PostgreSQL
  object-relational database. In effect, PostGIS "spatially enables"
@@ -156,10 +156,10 @@ Package: postgresql-9.1-postgis-scripts
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: postgresql-9.1-postgis-2.1
-Replaces: postgresql-9.1-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.1-postgis-2.1-scripts (<< 2.1.1-1~)
-Breaks: postgresql-9.1-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.1-postgis-2.1-scripts (<< 2.1.1-1~)
+Replaces: postgresql-9.1-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.1-postgis-2.1-scripts (<< 2.1.0-4~)
+Breaks: postgresql-9.1-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.1-postgis-2.1-scripts (<< 2.1.0-4~)
 Description: Geographic objects support for PostgreSQL 9.1 -- scripts
  PostGIS adds support for geographic objects to the PostgreSQL
  object-relational database. In effect, PostGIS "spatially enables"
@@ -212,10 +212,10 @@ Package: postgresql-9.2-postgis-scripts
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: postgresql-9.2-postgis-2.1
-Replaces: postgresql-9.2-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.2-postgis-2.1-scripts (<< 2.1.1-1~)
-Breaks: postgresql-9.2-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.2-postgis-2.1-scripts (<< 2.1.1-1~)
+Replaces: postgresql-9.2-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.2-postgis-2.1-scripts (<< 2.1.0-4~)
+Breaks: postgresql-9.2-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.2-postgis-2.1-scripts (<< 2.1.0-4~)
 Description: Geographic objects support for PostgreSQL 9.2 -- scripts
  PostGIS adds support for geographic objects to the PostgreSQL
  object-relational database. In effect, PostGIS "spatially enables"
@@ -268,10 +268,10 @@ Package: postgresql-9.3-postgis-scripts
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: postgresql-9.3-postgis-2.1
-Replaces: postgresql-9.3-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.3-postgis-2.1-scripts (<< 2.1.1-1~)
-Breaks: postgresql-9.3-postgis-2.0-scripts (<< 2.1.1~),
- postgresql-9.3-postgis-2.1-scripts (<< 2.1.1-1~)
+Replaces: postgresql-9.3-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.3-postgis-2.1-scripts (<< 2.1.0-4~)
+Breaks: postgresql-9.3-postgis-2.0-scripts (<< 2.1.0~),
+ postgresql-9.3-postgis-2.1-scripts (<< 2.1.0-4~)
 Description: Geographic objects support for PostgreSQL 9.3 -- scripts
  PostGIS adds support for geographic objects to the PostgreSQL
  object-relational database. In effect, PostGIS "spatially enables"
