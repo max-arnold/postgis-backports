@@ -2,14 +2,17 @@ Description: Not sure why exactly we need this...
 Author: Markus Wanner <markus@bluegap.ch>
 Last-Update: 2013-04-14
 
---- a/doc/Makefile
-+++ b/doc/Makefile
-@@ -327,7 +327,7 @@
+--- a/doc/Makefile.in
++++ b/doc/Makefile.in
+@@ -327,9 +327,9 @@ docs-uninstall:
  	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/postgis.html
  	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/README.postgis
  
 -install: comments-install
 +install: man-install docs-install
  
- uninstall: comments-uninstall
+-uninstall: comments-uninstall
++uninstall: man-uninstall docs-uninstall
  
+ ifeq ($(XSLTPROC),)
+ garden: requirements_not_met_xsltproc
